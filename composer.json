@@ -36,8 +36,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Keepsuit\\Liquid\\": "src/",
-            "Keepsuit\\Liquid\\Database\\Factories\\": "database/factories/"
+            "Keepsuit\\Liquid\\": "src/"
         }
     },
     "autoload-dev": {
