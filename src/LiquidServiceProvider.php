@@ -24,8 +24,8 @@ class LiquidServiceProvider extends PackageServiceProvider
                 files: $app['files'],
                 cachePath: $app['config']['view.compiled'],
                 basePath: $app['config']->get('view.relative_hash', false) ? $app->basePath() : '',
-                shouldCache: $app['config']->get('view.cache', true),
-                compiledExtension: $app['config']->get('view.compiled_extension', 'php'),
+                shouldCache: (bool) $app['config']->get('view.cache', true),
+                compiledExtension: '',
             );
         });
 

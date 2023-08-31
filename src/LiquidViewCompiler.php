@@ -24,7 +24,7 @@ class LiquidViewCompiler extends Compiler implements CompilerInterface
         $this->files->put($this->getCompiledPath($path), serialize($template));
     }
 
-    public function render(string $path, array $data)
+    public function render(string $path, array $data): string
     {
         $template = unserialize($this->files->get($this->getCompiledPath($path)));
 
