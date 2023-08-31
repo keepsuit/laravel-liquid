@@ -9,8 +9,6 @@ class LiquidEngine extends PhpEngine
 {
     /**
      * A stack of the last compiled templates.
-     *
-     * @var array
      */
     protected array $lastCompiled = [];
 

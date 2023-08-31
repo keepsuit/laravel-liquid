@@ -28,7 +28,7 @@ class LiquidViewCompiler extends Compiler implements CompilerInterface
     {
         $template = unserialize($this->files->get($this->getCompiledPath($path)));
 
-        if (!$template instanceof Template) {
+        if (! $template instanceof Template) {
             throw new \Exception('Template is not an instance of Template');
         }
 
