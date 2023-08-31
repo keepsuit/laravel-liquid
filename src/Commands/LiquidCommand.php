@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Keepsuit\Liquid\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LiquidCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-liquid';
 
     public $description = 'My command';
 
