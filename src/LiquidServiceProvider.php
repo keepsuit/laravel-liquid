@@ -2,6 +2,7 @@
 
 namespace Keepsuit\Liquid;
 
+use Illuminate\Foundation\Application;
 use Keepsuit\Liquid\Commands\LiquidCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -14,5 +15,31 @@ class LiquidServiceProvider extends PackageServiceProvider
             ->name('laravel-liquid')
             ->hasConfigFile()
             ->hasCommand(LiquidCommand::class);
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->singleton('liquid.compiler', function (Application $app) {
+            return new LiquidViewCompiler(
+                files: $app['files'],
+                cachePath: $app['config']['view.compiled'],
+                basePath: $app['config']->get('view.relative_hash', false) ? $app->basePath() : '',
+                shouldCache: $app['config']->get('view.cache', true),
+                compiledExtension: $app['config']->get('view.compiled_extension', 'php'),
+            );
+        });
+
+        $this->app['view.engine.resolver']->register('liquid', function () {
+            $liquidEngine = new LiquidEngine(
+                $this->app['liquid.compiler'],
+                $this->app['files']
+            );
+
+            $this->app->terminating(static function () use ($liquidEngine) {
+                $liquidEngine->forgetCompiled();
+            });
+
+            return $liquidEngine;
+        });
     }
 }
