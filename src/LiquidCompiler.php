@@ -109,8 +109,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
     }
 
     /**
-     * @throws ViewException
      * @return never-return
+     *
+     * @throws ViewException
      */
     protected function mapLiquidExceptionToLaravel(LiquidException $e, string $path): void
     {
