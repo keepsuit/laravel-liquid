@@ -5,6 +5,11 @@ use Keepsuit\Liquid\LiquidCompiler;
 use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
+    $this->viewFinder = mock(\Illuminate\View\FileViewFinder::class);
+    $viewFactory = mock(\Illuminate\View\Factory::class);
+    $viewFactory->shouldReceive('getFinder')->andReturn($this->viewFinder);
+    $this->app->bind(\Illuminate\View\Factory::class, fn () => $viewFactory);
+
     $this->compiler = new LiquidCompiler(
         files: $this->files = mock(Filesystem::class),
         cachePath: __DIR__
@@ -34,24 +39,28 @@ test('isExpired return false when cache is true and no file modification', funct
 });
 
 test('compiles file and returns content', function () {
-    $template = TemplateFactory::new()->parse('Hello World');
+    $template = TemplateFactory::new()->parseString('Hello World', 'foo');
 
-    $this->files->shouldReceive('get')->once()->with('foo')->andReturn('Hello World');
+    $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
     $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(true);
-    $this->files->shouldReceive('put')->once()->with(__DIR__.'/'.hash('xxh128', 'v2foo').'.php', serialize($template));
+    $this->files->shouldReceive('put')->once()->with(__DIR__.'/'.hash('xxh128', 'v2foo.liquid').'.php', serialize($template));
+    $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['foo' => 'foo.liquid']);
+    $this->viewFinder->shouldReceive('find')->once()->with('foo')->andReturn('foo.liquid');
 
-    $this->compiler->compile('foo');
+    $this->compiler->compile('foo.liquid');
 });
 
 test('compiles file and returns content creating directory', function () {
-    $template = TemplateFactory::new()->parse('Hello World');
+    $template = TemplateFactory::new()->parseString('Hello World', 'foo');
 
-    $this->files->shouldReceive('get')->once()->with('foo')->andReturn('Hello World');
+    $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
     $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(false);
     $this->files->shouldReceive('makeDirectory')->once()->with(__DIR__, 0777, true, true);
-    $this->files->shouldReceive('put')->once()->with(__DIR__.'/'.hash('xxh128', 'v2foo').'.php', serialize($template));
+    $this->files->shouldReceive('put')->once()->with(__DIR__.'/'.hash('xxh128', 'v2foo.liquid').'.php', serialize($template));
+    $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['foo' => 'foo.liquid']);
+    $this->viewFinder->shouldReceive('find')->once()->with('foo')->andReturn('foo.liquid');
 
-    $this->compiler->compile('foo');
+    $this->compiler->compile('foo.liquid');
 });
 
 test('isExpired return false when use cache is false', function () {

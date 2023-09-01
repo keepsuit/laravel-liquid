@@ -2,14 +2,30 @@
 
 namespace Keepsuit\Liquid;
 
+use Illuminate\Container\Container;
+use Illuminate\Support\Collection;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
+use Keepsuit\Liquid\Contracts\LiquidFileSystem;
+use Keepsuit\Liquid\Exceptions\InternalException;
+use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 
-class LiquidCompiler extends Compiler implements CompilerInterface
+class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSystem
 {
     protected ?TemplateFactory $factory = null;
+
+    protected ?FileViewFinder $viewFinder = null;
+
+    public function readTemplateFile(string $templateName): string
+    {
+        $path = $this->getViewFinder()->find($templateName);
+
+        return $this->files->get($path);
+    }
 
     public function compile($path): void
     {
@@ -17,21 +33,20 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             return;
         }
 
-        $source = $this->files->get($path);
-
         try {
-            $template = $this->getTemplateFactory()->parse(
-                source: $source,
-                lineNumbers: (bool) config('app.debug', false)
-            );
-        } catch (Exceptions\SyntaxException $e) {
+            $template = $this->getTemplateFactory()->parseTemplate($this->getTemplateNameFromPath($path));
+        } catch (LiquidException $e) {
             throw new ViewException(
                 message: sprintf('%s (View: %s)', $e->getMessage(), $path),
-                previous: new SyntaxException(
-                    message: $e->getMessage(),
-                    line: $e->lineNumber,
-                    filename: $path,
-                ),
+                previous: match (true) {
+                    $e instanceof SyntaxException => new SyntaxException(
+                        message: $e->getMessage(),
+                        filename: $path,
+                        line: $e->lineNumber,
+                    ),
+                    $e instanceof InternalException => $e->getPrevious(),
+                    default => $e,
+                },
             );
         }
 
@@ -56,12 +71,40 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         return $template->render($context);
     }
 
+    protected function getTemplateNameFromPath(string $path): string
+    {
+        $templateName = Collection::make($this->getViewFinder()->getViews())
+            ->mapWithKeys(fn (string $templatePath, string $templateName) => [$templatePath => $templateName])
+            ->get($path);
+
+        if ($templateName === null) {
+            throw new \RuntimeException('Template not found from path: '.$path);
+        }
+
+        return $templateName;
+    }
+
     protected function getTemplateFactory(): TemplateFactory
     {
         if ($this->factory === null) {
-            $this->factory = TemplateFactory::new();
+            $this->factory = TemplateFactory::new()
+                ->setFilesystem($this)
+                ->lineNumbers((bool) config('app.debug', false));
         }
 
         return $this->factory;
+    }
+
+    protected function getViewFinder(): FileViewFinder
+    {
+        if ($this->viewFinder === null) {
+            $viewFinder = Container::getInstance()
+                ->make(Factory::class)
+                ->getFinder();
+            assert($viewFinder instanceof FileViewFinder);
+            $this->viewFinder = $viewFinder;
+        }
+
+        return $this->viewFinder;
     }
 }
