@@ -3,6 +3,7 @@
 namespace Keepsuit\Liquid;
 
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
@@ -13,6 +14,7 @@ use Keepsuit\Liquid\Contracts\LiquidFileSystem;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
+use Keepsuit\Liquid\Tags\ViteTag;
 
 class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSystem
 {
@@ -36,18 +38,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
         try {
             $template = $this->getTemplateFactory()->parseTemplate($this->getTemplateNameFromPath($path));
         } catch (LiquidException $e) {
-            throw new ViewException(
-                message: sprintf('%s (View: %s)', $e->getMessage(), $path),
-                previous: match (true) {
-                    $e instanceof SyntaxException => new SyntaxException(
-                        message: $e->getMessage(),
-                        filename: $path,
-                        line: $e->lineNumber,
-                    ),
-                    $e instanceof InternalException => $e->getPrevious(),
-                    default => $e,
-                },
-            );
+            $this->mapLiquidExceptionToLaravel($e, $path);
         }
 
         $this->ensureCompiledDirectoryExists($this->getCompiledPath($path));
@@ -55,6 +46,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
         $this->files->put($this->getCompiledPath($path), serialize($template));
     }
 
+    /**
+     * @throws ViewException
+     * @throws FileNotFoundException
+     */
     public function render(string $path, array $data): string
     {
         $template = unserialize($this->files->get($this->getCompiledPath($path)));
@@ -63,12 +58,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
             throw new \Exception('Template is not an instance of Template');
         }
 
-        $context = $this->getTemplateFactory()->newRenderContext(
-            environment: $data,
-            rethrowExceptions: true,
-        );
+        try {
+            $context = $this->getTemplateFactory()->newRenderContext(
+                environment: $data,
+                rethrowExceptions: true,
+            );
 
-        return $template->render($context);
+            return $template->render($context);
+        } catch (LiquidException $e) {
+            $this->mapLiquidExceptionToLaravel($e, $path);
+        }
     }
 
     protected function getTemplateNameFromPath(string $path): string
@@ -89,7 +88,8 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
         if ($this->factory === null) {
             $this->factory = TemplateFactory::new()
                 ->setFilesystem($this)
-                ->lineNumbers((bool) config('app.debug', false));
+                ->lineNumbers((bool) config('app.debug', false))
+                ->registerTag(ViteTag::class);
         }
 
         return $this->factory;
@@ -106,5 +106,25 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
         }
 
         return $this->viewFinder;
+    }
+
+    /**
+     * @throws ViewException
+     * @return never-return
+     */
+    protected function mapLiquidExceptionToLaravel(LiquidException $e, string $path): void
+    {
+        throw new ViewException(
+            message: sprintf('%s (View: %s)', $e->getMessage(), $path),
+            previous: match (true) {
+                $e instanceof SyntaxException => new SyntaxException(
+                    message: $e->getMessage(),
+                    filename: $path,
+                    line: $e->lineNumber,
+                ),
+                $e instanceof InternalException => $e->getPrevious(),
+                default => $e,
+            },
+        );
     }
 }
