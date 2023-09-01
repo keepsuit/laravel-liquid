@@ -4,8 +4,10 @@ namespace Keepsuit\Liquid;
 
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\ViewException;
+use Keepsuit\Liquid\Exceptions\SyntaxException;
 
-class LiquidViewCompiler extends Compiler implements CompilerInterface
+class LiquidCompiler extends Compiler implements CompilerInterface
 {
     protected ?TemplateFactory $factory = null;
 
@@ -17,7 +19,21 @@ class LiquidViewCompiler extends Compiler implements CompilerInterface
 
         $source = $this->files->get($path);
 
-        $template = $this->getTemplateFactory()->parse($source);
+        try {
+            $template = $this->getTemplateFactory()->parse(
+                source: $source,
+                lineNumbers: (bool) config('app.debug', false)
+            );
+        } catch (Exceptions\SyntaxException $e) {
+            throw new ViewException(
+                message: sprintf('%s (View: %s)', $e->getMessage(), $path),
+                previous: new SyntaxException(
+                    message: $e->getMessage(),
+                    line: $e->lineNumber,
+                    filename: $path,
+                ),
+            );
+        }
 
         $this->ensureCompiledDirectoryExists($this->getCompiledPath($path));
 
@@ -33,7 +49,8 @@ class LiquidViewCompiler extends Compiler implements CompilerInterface
         }
 
         $context = $this->getTemplateFactory()->newRenderContext(
-            environment: $data
+            environment: $data,
+            rethrowExceptions: true,
         );
 
         return $template->render($context);
@@ -42,7 +59,7 @@ class LiquidViewCompiler extends Compiler implements CompilerInterface
     protected function getTemplateFactory(): TemplateFactory
     {
         if ($this->factory === null) {
-            $this->factory = new TemplateFactory();
+            $this->factory = TemplateFactory::new();
         }
 
         return $this->factory;

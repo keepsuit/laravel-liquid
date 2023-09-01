@@ -1,14 +1,14 @@
 <?php
 
 use Illuminate\Filesystem\Filesystem;
+use Keepsuit\Liquid\LiquidCompiler;
 use Keepsuit\Liquid\LiquidEngine;
-use Keepsuit\Liquid\LiquidViewCompiler;
 use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
     $this->files = mock(Filesystem::class);
     $this->engine = new LiquidEngine(
-        new LiquidViewCompiler(
+        new LiquidCompiler(
             files: $this->files,
             cachePath: __DIR__
         ),

@@ -11,11 +11,11 @@ parameters:
 			path: src/LiquidServiceProvider.php
 
 		-
-			message: "#^Cannot access offset 'view\\.engine\\.resolver' on Illuminate\\\\Contracts\\\\Foundation\\\\Application\\.$#"
+			message: "#^Cannot access offset 'view' on Illuminate\\\\Contracts\\\\Foundation\\\\Application\\.$#"
 			count: 1
 			path: src/LiquidServiceProvider.php
 
 		-
-			message: "#^Parameter \\$cachePath of class Keepsuit\\\\Liquid\\\\LiquidViewCompiler constructor expects string, mixed given\\.$#"
+			message: "#^Parameter \\$cachePath of class Keepsuit\\\\Liquid\\\\LiquidCompiler constructor expects string, mixed given\\.$#"
 			count: 1
 			path: src/LiquidServiceProvider.php

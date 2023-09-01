@@ -20,13 +20,13 @@ class LiquidEngine extends PhpEngine
     protected array $compiledOrNotExpired = [];
 
     public function __construct(
-        protected LiquidViewCompiler $compiler,
+        protected LiquidCompiler $compiler,
         Filesystem $files
     ) {
         parent::__construct($files);
     }
 
-    public function getCompiler(): LiquidViewCompiler
+    public function getCompiler(): LiquidCompiler
     {
         return $this->compiler;
     }

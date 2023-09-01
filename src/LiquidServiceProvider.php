@@ -20,7 +20,7 @@ class LiquidServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->singleton('liquid.compiler', function (Application $app) {
-            return new LiquidViewCompiler(
+            return new LiquidCompiler(
                 files: $app['files'],
                 cachePath: $app['config']['view.compiled'],
                 basePath: $app['config']->get('view.relative_hash', false) ? $app->basePath() : '',
@@ -29,7 +29,7 @@ class LiquidServiceProvider extends PackageServiceProvider
             );
         });
 
-        $this->app['view.engine.resolver']->register('liquid', function () {
+        $this->app['view']->addExtension('liquid', 'liquid', function () {
             $liquidEngine = new LiquidEngine(
                 $this->app['liquid.compiler'],
                 $this->app['files']

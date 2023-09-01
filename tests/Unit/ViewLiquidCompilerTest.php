@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Filesystem\Filesystem;
-use Keepsuit\Liquid\LiquidViewCompiler;
+use Keepsuit\Liquid\LiquidCompiler;
 use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
-    $this->compiler = new LiquidViewCompiler(
+    $this->compiler = new LiquidCompiler(
         files: $this->files = mock(Filesystem::class),
         cachePath: __DIR__
     );
@@ -55,7 +55,7 @@ test('compiles file and returns content creating directory', function () {
 });
 
 test('isExpired return false when use cache is false', function () {
-    $compiler = new LiquidViewCompiler(
+    $compiler = new LiquidCompiler(
         files: $this->files,
         cachePath: __DIR__,
         shouldCache: false,
