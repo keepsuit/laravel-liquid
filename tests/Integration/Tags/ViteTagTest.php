@@ -5,7 +5,7 @@ beforeEach(function () {
     app('config')->set('app.asset_url', 'https://example.com');
 
     $this->factory = \Keepsuit\Liquid\TemplateFactory::new()
-        ->registerTag(\Keepsuit\Liquid\Tags\ViteTag::class);
+        ->registerTag(\Keepsuit\LaravelLiquid\Tags\ViteTag::class);
 });
 
 afterEach(function () {

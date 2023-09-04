@@ -1,16 +1,16 @@
 <?php
 
-namespace Keepsuit\Liquid\Facades;
+namespace Keepsuit\LaravelLiquid\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Keepsuit\Liquid\Liquid
+ * @see \Keepsuit\LaravelLiquid\Liquid
  */
 class Liquid extends Facade
 {
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
-        return \Keepsuit\Liquid\Liquid::class;
+        return \Keepsuit\LaravelLiquid\Liquid::class;
     }
 }

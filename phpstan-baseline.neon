@@ -11,6 +11,6 @@ parameters:
 			path: src/LiquidServiceProvider.php
 
 		-
-			message: "#^Parameter \\$cachePath of class Keepsuit\\\\Liquid\\\\LiquidCompiler constructor expects string, mixed given\\.$#"
+			message: "#^Parameter \\$cachePath of class Keepsuit\\\\LaravelLiquid\\\\LiquidCompiler constructor expects string, mixed given\\.$#"
 			count: 1
 			path: src/LiquidServiceProvider.php

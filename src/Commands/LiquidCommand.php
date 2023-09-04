@@ -1,6 +1,6 @@
 <?php
 
-namespace Keepsuit\Liquid\Commands;
+namespace Keepsuit\LaravelLiquid\Commands;
 
 use Illuminate\Console\Command;
 

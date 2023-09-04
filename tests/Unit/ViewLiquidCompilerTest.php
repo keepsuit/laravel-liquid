@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Filesystem\Filesystem;
-use Keepsuit\Liquid\LiquidCompiler;
+use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keepsuit\Liquid;
+namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Engines\PhpEngine;

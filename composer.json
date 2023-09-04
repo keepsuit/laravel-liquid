@@ -37,12 +37,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Keepsuit\\Liquid\\": "src/"
+            "Keepsuit\\LaravelLiquid\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Keepsuit\\Liquid\\Tests\\": "tests/",
+            "Keepsuit\\LaravelLiquid\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },

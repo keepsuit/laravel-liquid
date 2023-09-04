@@ -1,6 +1,6 @@
 <?php
 
-namespace Keepsuit\Liquid\Tags;
+namespace Keepsuit\LaravelLiquid\Tags;
 
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Vite;

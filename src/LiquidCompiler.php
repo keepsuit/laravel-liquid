@@ -1,6 +1,6 @@
 <?php
 
-namespace Keepsuit\Liquid;
+namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
@@ -10,11 +10,13 @@ use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
+use Keepsuit\LaravelLiquid\Tags\ViteTag;
 use Keepsuit\Liquid\Contracts\LiquidFileSystem;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
-use Keepsuit\Liquid\Tags\ViteTag;
+use Keepsuit\Liquid\Template;
+use Keepsuit\Liquid\TemplateFactory;
 
 class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSystem
 {

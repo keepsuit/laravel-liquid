@@ -1,8 +1,8 @@
 <?php
 
-namespace Keepsuit\Liquid\Tests;
+namespace Keepsuit\LaravelLiquid\Tests;
 
-use Keepsuit\Liquid\LiquidServiceProvider;
+use Keepsuit\LaravelLiquid\LiquidServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra

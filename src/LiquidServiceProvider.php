@@ -1,10 +1,9 @@
 <?php
 
-namespace Keepsuit\Liquid;
+namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
-use Keepsuit\Liquid\Commands\LiquidCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -14,8 +13,7 @@ class LiquidServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-liquid')
-            ->hasConfigFile()
-            ->hasCommand(LiquidCommand::class);
+            ->hasConfigFile();
     }
 
     public function packageRegistered(): void

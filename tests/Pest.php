@@ -1,5 +1,5 @@
 <?php
 
-use Keepsuit\Liquid\Tests\TestCase;
+use Keepsuit\LaravelLiquid\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
