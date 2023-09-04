@@ -11,12 +11,12 @@ class UrlFilters extends FiltersProvider
         return asset($path);
     }
 
-    public function route(string $name, string|int...$parameters): string
+    public function route(string $name, string|int ...$parameters): string
     {
         return route($name, $parameters);
     }
 
-    public function url(string $name, string|int...$parameters): string
+    public function url(string $name, string|int ...$parameters): string
     {
         return url($name, $parameters);
     }
