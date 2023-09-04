@@ -4,32 +4,19 @@ namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Support\Collection;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
-use Illuminate\View\Factory;
-use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
-use Keepsuit\LaravelLiquid\Tags\ViteTag;
-use Keepsuit\Liquid\Contracts\LiquidFileSystem;
+use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Template;
 use Keepsuit\Liquid\TemplateFactory;
 
-class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSystem
+class LiquidCompiler extends Compiler implements CompilerInterface
 {
     protected ?TemplateFactory $factory = null;
-
-    protected ?FileViewFinder $viewFinder = null;
-
-    public function readTemplateFile(string $templateName): string
-    {
-        $path = $this->getViewFinder()->find($templateName);
-
-        return $this->files->get($path);
-    }
 
     public function compile($path): void
     {
@@ -74,40 +61,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface, LiquidFileSy
 
     protected function getTemplateNameFromPath(string $path): string
     {
-        $templateName = Collection::make($this->getViewFinder()->getViews())
-            ->mapWithKeys(fn (string $templatePath, string $templateName) => [$templatePath => $templateName])
-            ->get($path);
-
-        if ($templateName === null) {
-            throw new \RuntimeException('Template not found from path: '.$path);
-        }
-
-        return $templateName;
+        return Container::getInstance()->make(LaravelLiquidFileSystem::class)->getTemplateNameFromPath($path);
     }
 
     protected function getTemplateFactory(): TemplateFactory
     {
         if ($this->factory === null) {
-            $this->factory = TemplateFactory::new()
-                ->setFilesystem($this)
-                ->lineNumbers((bool) config('app.debug', false))
-                ->registerTag(ViteTag::class);
+            $this->factory = Container::getInstance()->make(TemplateFactory::class);
         }
 
         return $this->factory;
-    }
-
-    protected function getViewFinder(): FileViewFinder
-    {
-        if ($this->viewFinder === null) {
-            $viewFinder = Container::getInstance()
-                ->make(Factory::class)
-                ->getFinder();
-            assert($viewFinder instanceof FileViewFinder);
-            $this->viewFinder = $viewFinder;
-        }
-
-        return $this->viewFinder;
     }
 
     /**

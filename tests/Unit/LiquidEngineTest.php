@@ -1,17 +1,24 @@
 <?php
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\LiquidEngine;
+use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
-    $this->viewFinder = mock(\Illuminate\View\FileViewFinder::class);
-    $viewFactory = mock(\Illuminate\View\Factory::class);
+    $this->viewFinder = mock(FileViewFinder::class);
+    $viewFactory = mock(Factory::class);
     $viewFactory->shouldReceive('getFinder')->andReturn($this->viewFinder);
-    $this->app->bind(\Illuminate\View\Factory::class, fn () => $viewFactory);
-
     $this->files = mock(Filesystem::class);
+    $this->app->bind(Factory::class, fn () => $viewFactory);
+    $this->app->bind(LaravelLiquidFileSystem::class, fn () => new LaravelLiquidFileSystem(
+        files: $this->files,
+        viewFinder: $this->viewFinder,
+    ));
+
     $this->engine = new LiquidEngine(
         new LiquidCompiler(
             files: $this->files,
