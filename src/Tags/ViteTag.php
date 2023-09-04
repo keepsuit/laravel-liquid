@@ -6,8 +6,10 @@ use Illuminate\Container\Container;
 use Illuminate\Foundation\Vite;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Parse\ParseContext;
+use Keepsuit\Liquid\Parse\Parser;
 use Keepsuit\Liquid\Parse\Regex;
 use Keepsuit\Liquid\Parse\Tokenizer;
+use Keepsuit\Liquid\Parse\TokenType;
 use Keepsuit\Liquid\Render\Context;
 use Keepsuit\Liquid\Tag;
 
@@ -17,9 +19,9 @@ class ViteTag extends Tag
 
     protected const EntryPointsSyntax = '/('.Regex::QuotedString.')/';
 
-    protected ?string $directory;
-
     protected array $entrypoints;
+
+    protected array $attributes;
 
     public static function tagName(): string
     {
@@ -28,22 +30,32 @@ class ViteTag extends Tag
 
     public function parse(ParseContext $parseContext, Tokenizer $tokenizer): static
     {
-        if (! preg_match(static::FullSyntax, $this->markup, $matches)) {
-            throw new SyntaxException('Syntax Error in "vite" - Valid syntax: vite "entrypoint1" "entrypoint2", directory: "custom"');
+        $parser = new Parser($this->markup);
+
+        $entrypoints = [];
+        while ($token = $parser->consumeOrFalse(TokenType::String)) {
+            $entrypoints[] = $token;
+            $parser->consumeOrFalse(TokenType::Comma);
+            if ($parser->look(TokenType::Colon, 2)) {
+                break;
+            }
         }
 
-        $directory = isset($matches[2]) ? $this->parseExpression($parseContext, $matches[2]) : null;
-        assert($directory === null || is_string($directory));
-        $this->directory = $directory;
-
-        if (! preg_match_all(static::EntryPointsSyntax, $matches[1], $matches)) {
+        if ($entrypoints === []) {
             throw new SyntaxException('Syntax Error in "vite" - Valid syntax: vite "entrypoint1" "entrypoint2", directory: "custom"');
         }
 
         $this->entrypoints = array_map(
-            fn (string $match) => $this->parseExpression($parseContext, $match),
-            $matches[1],
+            fn (string $expression) => $this->parseExpression($parseContext, $expression),
+            $entrypoints,
         );
+
+        $this->attributes = array_map(
+            fn (string $expression) => $this->parseExpression($parseContext, $expression),
+            $parser->attributes(TokenType::Comma)
+        );
+
+        $parser->consume(TokenType::EndOfString);
 
         return $this;
     }
@@ -53,6 +65,6 @@ class ViteTag extends Tag
         $vite = Container::getInstance()->make(Vite::class);
         assert($vite instanceof Vite);
 
-        return $vite($this->entrypoints, $this->directory)->toHtml();
+        return $vite($this->entrypoints, $this->attributes['directory'] ?? null)->toHtml();
     }
 }
