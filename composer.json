@@ -73,10 +73,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Keepsuit\\Liquid\\LiquidServiceProvider"
+                "Keepsuit\\LaravelLiquid\\LiquidServiceProvider"
             ],
             "aliases": {
-                "Liquid": "Keepsuit\\Liquid\\Facades\\Liquid"
+                "Liquid": "Keepsuit\\LaravelLiquid\\Facades\\Liquid"
             }
         }
     },
