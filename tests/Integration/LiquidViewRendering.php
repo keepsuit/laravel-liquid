@@ -14,3 +14,10 @@ it('renders liquid template with partial', function () {
     HTML
     );
 });
+
+it('renders liquid template with facade', function () {
+    expect(trim(\Keepsuit\LaravelLiquid\Facades\Liquid::render('simple')))->toBe(<<<'HTML'
+    Hello world
+    HTML
+    );
+});

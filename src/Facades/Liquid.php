@@ -3,9 +3,16 @@
 namespace Keepsuit\LaravelLiquid\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\HtmlString;
+use Keepsuit\Liquid\Template;
+use Keepsuit\Liquid\TemplateFactory;
 
 /**
  * @see \Keepsuit\LaravelLiquid\Liquid
+ *
+ * @method static Template parse(string $view)
+ * @method static HtmlString render(string $view, array $data = [])
+ * @method static TemplateFactory factory()
  */
 class Liquid extends Facade
 {

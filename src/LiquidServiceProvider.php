@@ -17,8 +17,7 @@ class LiquidServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('laravel-liquid')
-            ->hasConfigFile();
+            ->name('laravel-liquid');
     }
 
     public function packageRegistered(): void
