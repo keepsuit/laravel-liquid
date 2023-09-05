@@ -4,6 +4,7 @@ namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
+use Keepsuit\LaravelLiquid\Filters\DebugFilters;
 use Keepsuit\LaravelLiquid\Filters\UrlFilters;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Tags\ViteTag;
@@ -34,7 +35,8 @@ class LiquidServiceProvider extends PackageServiceProvider
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
                 ->lineNumbers((bool) config('app.debug', false))
                 ->registerTag(ViteTag::class)
-                ->registerFilter(UrlFilters::class);
+                ->registerFilter(UrlFilters::class)
+                ->registerFilter(DebugFilters::class);
         });
 
         $this->app->singleton('liquid.compiler', function (Application $app) {
