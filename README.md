@@ -5,7 +5,8 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/keepsuit/laravel-liquid/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/keepsuit/laravel-liquid/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/keepsuit/laravel-liquid.svg?style=flat-square)](https://packagist.org/packages/keepsuit/laravel-liquid)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+This is a Laravel view integration of the Shopify Liquid template engine.
+It uses [keepsuit/liquid](https://github.com/keepsuit/php-liquid) PHP porting under the hood to parse liquid templates.
 
 ## Installation
 
@@ -15,22 +16,19 @@ You can install the package via composer:
 composer require keepsuit/laravel-liquid
 ```
 
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="laravel-liquid-config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
 ## Usage
 
+1. Create a liquid template file in `resources/views` folder (for example `home.liquid`).
+2. Render the template as usual with Laravel view engine.
+
 ```php
+class HomeController extends Controller
+{
+    public function index()
+    {
+        return view('home');
+    }
+}
 ```
 
 ## Testing
@@ -42,14 +40,6 @@ composer test
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
 
 ## Credits
 
