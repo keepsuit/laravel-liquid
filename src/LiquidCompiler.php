@@ -50,7 +50,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         try {
             $context = $this->getTemplateFactory()->newRenderContext(
                 environment: $data,
-                rethrowExceptions: true,
             );
 
             return $template->render($context);
