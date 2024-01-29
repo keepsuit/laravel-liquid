@@ -29,7 +29,7 @@ class ViteTag extends Tag
 
         $this->entrypoints = [];
         while ($entrypoint = $tokens->expression()) {
-            if (!is_string($entrypoint)) {
+            if (! is_string($entrypoint)) {
                 throw new SyntaxException(self::SYNTAX_ERROR);
             }
 
@@ -47,7 +47,7 @@ class ViteTag extends Tag
         }
 
         $this->attributes = [];
-        while($token = $tokens->consumeOrFalse(TokenType::Identifier)) {
+        while ($token = $tokens->consumeOrFalse(TokenType::Identifier)) {
             $tokens->consume(TokenType::Colon);
             $this->attributes[$token->data] = $tokens->expression();
         }
