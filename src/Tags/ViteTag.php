@@ -5,19 +5,14 @@ namespace Keepsuit\LaravelLiquid\Tags;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Vite;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
-use Keepsuit\Liquid\Parse\ParseContext;
-use Keepsuit\Liquid\Parse\Parser;
-use Keepsuit\Liquid\Parse\Regex;
-use Keepsuit\Liquid\Parse\Tokenizer;
+use Keepsuit\Liquid\Nodes\TagParseContext;
 use Keepsuit\Liquid\Parse\TokenType;
-use Keepsuit\Liquid\Render\Context;
+use Keepsuit\Liquid\Render\RenderContext;
 use Keepsuit\Liquid\Tag;
 
 class ViteTag extends Tag
 {
-    protected const FullSyntax = '/((?:(?:'.Regex::QuotedString.')\s*)+)(?:,\s*directory:\s*('.Regex::QuotedString.'))?/';
-
-    protected const EntryPointsSyntax = '/('.Regex::QuotedString.')/';
+    protected const SYNTAX_ERROR = 'Syntax Error in "vite" - Valid syntax: vite "entrypoint1" "entrypoint2", directory: "custom"';
 
     protected array $entrypoints;
 
@@ -28,39 +23,41 @@ class ViteTag extends Tag
         return 'vite';
     }
 
-    public function parse(ParseContext $parseContext, Tokenizer $tokenizer): static
+    public function parse(TagParseContext $context): static
     {
-        $parser = new Parser($this->markup);
+        $tokens = $context->params;
 
-        $entrypoints = [];
-        while ($token = $parser->consumeOrFalse(TokenType::String)) {
-            $entrypoints[] = $token;
-            $parser->consumeOrFalse(TokenType::Comma);
-            if ($parser->look(TokenType::Colon, 2)) {
+        $this->entrypoints = [];
+        while ($entrypoint = $tokens->expression()) {
+            if (!is_string($entrypoint)) {
+                throw new SyntaxException(self::SYNTAX_ERROR);
+            }
+
+            $this->entrypoints[] = $entrypoint;
+
+            $tokens->consumeOrFalse(TokenType::Comma);
+
+            if ($tokens->look(TokenType::Colon, 1)) {
                 break;
             }
         }
 
-        if ($entrypoints === []) {
-            throw new SyntaxException('Syntax Error in "vite" - Valid syntax: vite "entrypoint1" "entrypoint2", directory: "custom"');
+        if ($this->entrypoints === []) {
+            throw new SyntaxException(self::SYNTAX_ERROR);
         }
 
-        $this->entrypoints = array_map(
-            fn (string $expression) => $this->parseExpression($parseContext, $expression),
-            $entrypoints,
-        );
+        $this->attributes = [];
+        while($token = $tokens->consumeOrFalse(TokenType::Identifier)) {
+            $tokens->consume(TokenType::Colon);
+            $this->attributes[$token->data] = $tokens->expression();
+        }
 
-        $this->attributes = array_map(
-            fn (string $expression) => $this->parseExpression($parseContext, $expression),
-            $parser->attributes(TokenType::Comma)
-        );
-
-        $parser->consume(TokenType::EndOfString);
+        $tokens->assertEnd();
 
         return $this;
     }
 
-    public function render(Context $context): string
+    public function render(RenderContext $context): string
     {
         $vite = Container::getInstance()->make(Vite::class);
         assert($vite instanceof Vite);
