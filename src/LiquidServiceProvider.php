@@ -32,8 +32,8 @@ class LiquidServiceProvider extends PackageServiceProvider
         $this->app->singleton(TemplateFactory::class, function (Application $app) {
             return TemplateFactory::new()
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
+                ->strictVariables($app->hasDebugModeEnabled())
                 ->rethrowExceptions()
-                ->debugMode($app->hasDebugModeEnabled())
                 ->registerTag(ViteTag::class)
                 ->registerFilter(UrlFilters::class)
                 ->registerFilter(DebugFilters::class);
