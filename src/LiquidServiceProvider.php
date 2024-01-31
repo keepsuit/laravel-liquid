@@ -33,8 +33,7 @@ class LiquidServiceProvider extends PackageServiceProvider
             return TemplateFactory::new()
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
                 ->rethrowExceptions()
-                ->lineNumbers($app->hasDebugModeEnabled())
-                ->strictVariables($app->hasDebugModeEnabled())
+                ->debugMode($app->hasDebugModeEnabled())
                 ->registerTag(ViteTag::class)
                 ->registerFilter(UrlFilters::class)
                 ->registerFilter(DebugFilters::class);

@@ -5,7 +5,7 @@ namespace Keepsuit\LaravelLiquid\Tags;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Vite;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
-use Keepsuit\Liquid\Nodes\TagParseContext;
+use Keepsuit\Liquid\Parse\TagParseContext;
 use Keepsuit\Liquid\Parse\TokenType;
 use Keepsuit\Liquid\Render\RenderContext;
 use Keepsuit\Liquid\Tag;
