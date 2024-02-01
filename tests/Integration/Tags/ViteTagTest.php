@@ -55,6 +55,47 @@ test('vite tag with multiple entrypoints and custom directory', function () {
     cleanViteManifest('custom');
 });
 
+test('vite tag exports entrypoints after parsing', function () {
+    $template = $this->factory->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
+
+    $outputs = $template->getState()->outputs;
+
+    expect($outputs)
+        ->toHaveKey('vite_entrypoints')
+        ->not->toHaveKey('vite_preloads');
+
+    expect($outputs['vite_entrypoints'])->toBe([
+        [
+            'entrypoint' => 'resources/js/app.js',
+            'directory' => 'custom',
+        ],
+    ]);
+});
+
+test('vite tag exports preloads after rendering', function () {
+    makeViteManifest();
+
+    $template = $this->factory->parseString('{% vite "resources/js/app.js" %}');
+    $template->render($this->factory->newRenderContext());
+
+    $outputs = $template->getState()->outputs;
+
+    expect($outputs)
+        ->toHaveKey('vite_entrypoints')
+        ->toHaveKey('vite_preloads');
+
+    expect($outputs['vite_preloads'])->toBe([
+        [
+            'href' => 'https://example.com/build/assets/app.versioned.js',
+            'attributes' => [
+                'rel="modulepreload"',
+            ],
+        ],
+    ]);
+
+    cleanViteManifest();
+});
+
 function makeViteManifest($path = 'build')
 {
     app()->usePublicPath(__DIR__);

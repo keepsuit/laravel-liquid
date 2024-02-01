@@ -54,6 +54,11 @@ class ViteTag extends Tag
 
         $tokens->assertEnd();
 
+        $context->getParseContext()->getOutputs()->push(
+            'vite_entrypoints',
+            ...array_map(fn (string $entrypoint) => ['entrypoint' => $entrypoint, ...$this->attributes], $this->entrypoints)
+        );
+
         return $this;
     }
 
@@ -62,6 +67,12 @@ class ViteTag extends Tag
         $vite = Container::getInstance()->make(Vite::class);
         assert($vite instanceof Vite);
 
-        return $vite($this->entrypoints, $this->attributes['directory'] ?? null)->toHtml();
+        $content = $vite($this->entrypoints, $this->attributes['directory'] ?? null)->toHtml();
+
+        foreach ($vite->preloadedAssets() as $url => $attributes) {
+            $context->getOutputs()->push('vite_preloads', ['href' => $url, 'attributes' => $attributes]);
+        }
+
+        return $content;
     }
 }
