@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.2.1 - 2024-03-06
+
+### What's Changed
+
+* Added support for laravel v11
+* Added support for liquid v0.5
+* Bump ramsey/composer-install from 2 to 3 by @dependabot in https://github.com/keepsuit/laravel-liquid/pull/6
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.2.0...v0.2.1
+
 ## v0.2.0 - 2024-01-31
 
 ### What's Changed
