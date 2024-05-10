@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.3.0 - 2024-05-10
+
+### What's Changed
+
+* Update liquid version to v0.6
+* Bump dependabot/fetch-metadata from 1.6.0 to 2.0.0 by @dependabot in https://github.com/keepsuit/laravel-liquid/pull/7
+* Bump aglipanci/laravel-pint-action from 2.3.1 to 2.4 by @dependabot in https://github.com/keepsuit/laravel-liquid/pull/8
+* Bump dependabot/fetch-metadata from 2.0.0 to 2.1.0 by @dependabot in https://github.com/keepsuit/laravel-liquid/pull/9
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.2.1...v0.3.0
+
 ## v0.2.1 - 2024-03-06
 
 ### What's Changed
