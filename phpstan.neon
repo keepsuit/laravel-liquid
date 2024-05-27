@@ -8,10 +8,8 @@ parameters:
         - src
     tmpDir: build/phpstan
     treatPhpDocTypesAsCertain: false
-    checkMissingIterableValueType: false
     checkGenericClassInNonGenericObjectType: true
     checkPhpDocMissingReturn: true
-    featureToggles:
-        disableCheckMissingIterableValueType: false
 
     ignoreErrors:
+        - identifier: missingType.iterableValue
