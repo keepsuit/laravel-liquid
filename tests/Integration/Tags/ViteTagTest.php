@@ -4,8 +4,7 @@ beforeEach(function () {
     makeViteManifest();
     app('config')->set('app.asset_url', 'https://example.com');
 
-    $this->factory = \Keepsuit\Liquid\TemplateFactory::new()
-        ->registerTag(\Keepsuit\LaravelLiquid\Tags\ViteTag::class);
+    $this->factory = newLiquidFactory();
 });
 
 afterEach(function () {
