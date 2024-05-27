@@ -1,7 +1,7 @@
 name: Feature request
 description: Request a new feature for the Package
 title: "[Feature]: "
-labels: ["feature"]
+labels: ["enhancement"]
 body:
     - type: textarea
       id: new-feature
