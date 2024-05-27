@@ -1,8 +1,7 @@
 <?php
 
 beforeEach(function () {
-    $this->factory = \Keepsuit\Liquid\TemplateFactory::new()
-        ->registerTag(\Keepsuit\LaravelLiquid\Tags\CsrfTag::class);
+    $this->factory = newLiquidFactory();
 });
 
 it('renders csrf input', function () {
