@@ -5,6 +5,7 @@ namespace Keepsuit\LaravelLiquid;
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
 use Keepsuit\LaravelLiquid\Filters\DebugFilters;
+use Keepsuit\LaravelLiquid\Filters\TranslatorFilters;
 use Keepsuit\LaravelLiquid\Filters\UrlFilters;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Tags\CsrfTag;
@@ -41,6 +42,7 @@ class LiquidServiceProvider extends PackageServiceProvider
                 ->registerTag(SessionTag::class)
                 ->registerTag(ErrorTag::class)
                 ->registerFilter(UrlFilters::class)
+                ->registerFilter(TranslatorFilters::class)
                 ->registerFilter(DebugFilters::class);
         });
 

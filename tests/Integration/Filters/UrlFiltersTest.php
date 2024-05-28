@@ -1,11 +1,7 @@
 <?php
 
-use Illuminate\Container\Container;
-use Keepsuit\Liquid\TemplateFactory;
-
 beforeEach(function () {
-    /** @var TemplateFactory factory */
-    $this->factory = Container::getInstance()->make(TemplateFactory::class);
+    $this->factory = newLiquidFactory();
 });
 
 test('asset filter', function () {

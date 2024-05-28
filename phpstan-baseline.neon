@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Parameter \\#2 \\$replace of function trans expects array\\<string, bool\\|float\\|int\\|string\\>, array\\<int\\|string, mixed\\> given\\.$#"
+			count: 1
+			path: src/Filters/TranslatorFilters.php
+
+		-
 			message: "#^Cannot access offset 'files' on Illuminate\\\\Contracts\\\\Foundation\\\\Application\\.$#"
 			count: 1
 			path: src/LiquidServiceProvider.php
