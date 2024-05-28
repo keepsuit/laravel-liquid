@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.4.0 - 2024-05-28
+
+### What's Changed
+
+* Added csrf tag by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/15
+* Added session tag by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/16
+* Added error tag by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/17
+* Added trans filter by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/18
+* Added env tag by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/19
+* Added auth & guest tags by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/20
+* Added else subtag to conditional tags by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/21
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.3.0...v0.4.0
+
 ## v0.3.0 - 2024-05-10
 
 ### What's Changed
