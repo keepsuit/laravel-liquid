@@ -24,3 +24,12 @@ it('env tag multiple', function () {
     setEnv('staging');
     expect($template->render($this->factory->newRenderContext()))->toBe('staging or production');
 });
+
+it('env tag else ', function () {
+    $template = $this->factory->parseString('{% env "production" %}prod{% else %}dev{% endenv %}');
+
+    expect($template->render($this->factory->newRenderContext()))->toBe('dev');
+
+    setEnv('production');
+    expect($template->render($this->factory->newRenderContext()))->toBe('prod');
+});

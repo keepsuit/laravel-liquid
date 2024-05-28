@@ -14,14 +14,30 @@ class SessionTag extends TagBlock
 
     protected BodyNode $body;
 
+    protected ?BodyNode $elseBody;
+
     public static function tagName(): string
     {
         return 'session';
     }
 
+    public function isSubTag(string $tagName): bool
+    {
+        return $tagName === 'else';
+    }
+
     public function parse(TagParseContext $context): static
     {
         assert($context->body !== null);
+
+        if ($context->tag === 'else') {
+            $this->elseBody = $context->body;
+
+            return $this;
+        }
+
+        $this->body = $context->body;
+        $this->elseBody = null;
 
         $key = $context->params->expression();
         $context->params->assertEnd();
@@ -31,7 +47,6 @@ class SessionTag extends TagBlock
         }
 
         $this->sessionKey = $key;
-        $this->body = $context->body;
 
         return $this;
     }
@@ -39,7 +54,7 @@ class SessionTag extends TagBlock
     public function render(RenderContext $context): string
     {
         if (! session()->has($this->sessionKey)) {
-            return '';
+            return $this->elseBody?->render($context) ?? '';
         }
 
         $value = session()->get($this->sessionKey);

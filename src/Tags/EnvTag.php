@@ -18,13 +18,30 @@ class EnvTag extends TagBlock
 
     protected BodyNode $body;
 
+    protected ?BodyNode $elseBody;
+
     public static function tagName(): string
     {
         return 'env';
     }
 
+    public function isSubTag(string $tagName): bool
+    {
+        return $tagName === 'else';
+    }
+
     public function parse(TagParseContext $context): static
     {
+        assert($context->body !== null);
+
+        if ($context->tag === 'else') {
+            $this->elseBody = $context->body;
+
+            return $this;
+        }
+
+        $this->body = $context->body;
+        $this->elseBody = null;
         $this->environments = [];
 
         do {
@@ -39,9 +56,6 @@ class EnvTag extends TagBlock
 
         $context->params->assertEnd();
 
-        assert($context->body !== null);
-        $this->body = $context->body;
-
         return $this;
     }
 
@@ -51,6 +65,6 @@ class EnvTag extends TagBlock
             return $this->body->render($context);
         }
 
-        return '';
+        return $this->elseBody?->render($context) ?? '';
     }
 }
