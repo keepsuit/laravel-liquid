@@ -14,16 +14,30 @@ class AuthTag extends TagBlock
 
     protected BodyNode $body;
 
+    protected ?BodyNode $elseBody = null;
+
     public static function tagName(): string
     {
         return 'auth';
     }
 
+    public function isSubTag(string $tagName): bool
+    {
+        return $tagName === 'else';
+    }
+
     public function parse(TagParseContext $context): static
     {
         assert($context->body !== null);
-        $this->body = $context->body;
 
+        if ($context->tag === 'else') {
+            $this->elseBody = $context->body;
+
+            return $this;
+        }
+
+        $this->body = $context->body;
+        $this->elseBody = null;
         $this->guard = null;
 
         if ($context->params->isEnd()) {
@@ -47,6 +61,6 @@ class AuthTag extends TagBlock
             return $this->body->render($context);
         }
 
-        return '';
+        return $this->elseBody?->render($context) ?? '';
     }
 }

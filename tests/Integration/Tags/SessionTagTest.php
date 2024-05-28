@@ -34,3 +34,10 @@ it('session tag pass value to body', function () {
     expect($template->render($this->factory->newRenderContext()))
         ->toBe('value: ok');
 });
+
+it('session tag else', function () {
+    $template = $this->factory->parseString('{% session "status" %}present{% else %}missing{% endsession %}');
+
+    expect($template->render($this->factory->newRenderContext()))
+        ->toBe('missing');
+});

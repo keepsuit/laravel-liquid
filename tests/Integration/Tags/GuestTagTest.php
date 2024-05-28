@@ -28,3 +28,12 @@ it('auth tag with custom guard', function () {
     Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User());
     expect($template->render($this->factory->newRenderContext()))->toBe('');
 });
+
+it('guest tag else', function () {
+    $template = $this->factory->parseString('{% guest %}guest{% else %}authenticated{% endguest %}');
+
+    expect($template->render($this->factory->newRenderContext()))->toBe('guest');
+
+    Auth::setUser(new \Illuminate\Foundation\Auth\User());
+    expect($template->render($this->factory->newRenderContext()))->toBe('authenticated');
+});
