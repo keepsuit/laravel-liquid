@@ -10,3 +10,9 @@ function newLiquidFactory(): \Keepsuit\Liquid\TemplateFactory
         ->setRethrowExceptions()
         ->setStrictVariables();
 }
+
+function setEnv(string $env): void
+{
+    app()->bind('env', fn () => $env);
+    expect(app()->environment())->toBe($env);
+}
