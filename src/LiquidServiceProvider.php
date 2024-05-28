@@ -9,6 +9,7 @@ use Keepsuit\LaravelLiquid\Filters\TranslatorFilters;
 use Keepsuit\LaravelLiquid\Filters\UrlFilters;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Tags\CsrfTag;
+use Keepsuit\LaravelLiquid\Tags\EnvTag;
 use Keepsuit\LaravelLiquid\Tags\ErrorTag;
 use Keepsuit\LaravelLiquid\Tags\SessionTag;
 use Keepsuit\LaravelLiquid\Tags\ViteTag;
@@ -41,6 +42,7 @@ class LiquidServiceProvider extends PackageServiceProvider
                 ->registerTag(CsrfTag::class)
                 ->registerTag(SessionTag::class)
                 ->registerTag(ErrorTag::class)
+                ->registerTag(EnvTag::class)
                 ->registerFilter(UrlFilters::class)
                 ->registerFilter(TranslatorFilters::class)
                 ->registerFilter(DebugFilters::class);
