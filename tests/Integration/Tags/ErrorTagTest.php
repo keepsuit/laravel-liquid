@@ -14,7 +14,7 @@ it('error tag valid', function () {
 });
 
 it('error tag invalid', function () {
-    $errorBag = new \Illuminate\Support\ViewErrorBag();
+    $errorBag = new \Illuminate\Support\ViewErrorBag;
     $errorBag->put('default', new \Illuminate\Support\MessageBag(['name' => 'name is required']));
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);
@@ -26,7 +26,7 @@ it('error tag invalid', function () {
 });
 
 it('error tag invalid pass message to body', function () {
-    $errorBag = new \Illuminate\Support\ViewErrorBag();
+    $errorBag = new \Illuminate\Support\ViewErrorBag;
     $errorBag->put('default', new \Illuminate\Support\MessageBag(['name' => 'name is required']));
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);
@@ -38,7 +38,7 @@ it('error tag invalid pass message to body', function () {
 });
 
 it('error tag custom bag', function () {
-    $errorBag = new \Illuminate\Support\ViewErrorBag();
+    $errorBag = new \Illuminate\Support\ViewErrorBag;
     $errorBag->put('custom', new \Illuminate\Support\MessageBag(['name' => 'name is required']));
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);

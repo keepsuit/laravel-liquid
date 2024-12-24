@@ -10,8 +10,7 @@ class Liquid
 {
     public function __construct(
         protected TemplateFactory $factory
-    ) {
-    }
+    ) {}
 
     public function parse(string $view): Template
     {

@@ -11,7 +11,7 @@ it('auth tag', function () {
 
     expect($template->render($this->factory->newRenderContext()))->toBe('');
 
-    Auth::setUser(new \Illuminate\Foundation\Auth\User());
+    Auth::setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->factory->newRenderContext()))->toBe('authenticated');
 });
 
@@ -22,10 +22,10 @@ it('auth tag with custom guard', function () {
 
     expect($template->render($this->factory->newRenderContext()))->toBe('');
 
-    Auth::setUser(new \Illuminate\Foundation\Auth\User());
+    Auth::setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->factory->newRenderContext()))->toBe('');
 
-    Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User());
+    Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->factory->newRenderContext()))->toBe('authenticated');
 });
 
@@ -34,6 +34,6 @@ it('auth tag else', function () {
 
     expect($template->render($this->factory->newRenderContext()))->toBe('guest');
 
-    Auth::setUser(new \Illuminate\Foundation\Auth\User());
+    Auth::setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->factory->newRenderContext()))->toBe('authenticated');
 });

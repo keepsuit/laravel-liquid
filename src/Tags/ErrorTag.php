@@ -63,7 +63,7 @@ class ErrorTag extends TagBlock
 
     public function render(RenderContext $context): string
     {
-        $errorBag = session()->get('errors') ?? new ViewErrorBag();
+        $errorBag = session()->get('errors') ?? new ViewErrorBag;
         assert($errorBag instanceof ViewErrorBag);
 
         $bagKey = match (true) {

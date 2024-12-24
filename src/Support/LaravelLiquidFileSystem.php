@@ -13,8 +13,7 @@ class LaravelLiquidFileSystem implements LiquidFileSystem
     public function __construct(
         protected Filesystem $files,
         protected ViewFinderInterface $viewFinder
-    ) {
-    }
+    ) {}
 
     public function readTemplateFile(string $templateName): string
     {
