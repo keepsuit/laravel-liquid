@@ -3,37 +3,37 @@
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 it('guest tag', function () {
-    $template = $this->factory->parseString('{% guest %}guest{% endguest %}');
+    $template = $this->environment->parseString('{% guest %}guest{% endguest %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('guest');
+    expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 
     Auth::setUser(new \Illuminate\Foundation\Auth\User);
-    expect($template->render($this->factory->newRenderContext()))->toBe('');
+    expect($template->render($this->environment->newRenderContext()))->toBe('');
 });
 
 it('auth tag with custom guard', function () {
     config()->set('auth.guards.admin', ['driver' => 'session', 'provider' => 'users']);
 
-    $template = $this->factory->parseString('{% guest "admin" %}guest{% endguest %}');
+    $template = $this->environment->parseString('{% guest "admin" %}guest{% endguest %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('guest');
+    expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 
     Auth::setUser(new \Illuminate\Foundation\Auth\User);
-    expect($template->render($this->factory->newRenderContext()))->toBe('guest');
+    expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 
     Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User);
-    expect($template->render($this->factory->newRenderContext()))->toBe('');
+    expect($template->render($this->environment->newRenderContext()))->toBe('');
 });
 
 it('guest tag else', function () {
-    $template = $this->factory->parseString('{% guest %}guest{% else %}authenticated{% endguest %}');
+    $template = $this->environment->parseString('{% guest %}guest{% else %}authenticated{% endguest %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('guest');
+    expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 
     Auth::setUser(new \Illuminate\Foundation\Auth\User);
-    expect($template->render($this->factory->newRenderContext()))->toBe('authenticated');
+    expect($template->render($this->environment->newRenderContext()))->toBe('authenticated');
 });

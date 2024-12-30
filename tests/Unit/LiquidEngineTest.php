@@ -3,10 +3,10 @@
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
+use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\LiquidEngine;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
-use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
     $this->viewFinder = mock(FileViewFinder::class);
@@ -29,7 +29,7 @@ beforeEach(function () {
 });
 
 test('views may be recompiled and rerendered', function () {
-    $template = TemplateFactory::new()->parseString('Hello World', 'fixtures.foo');
+    $template = Liquid::environment()->parseString('Hello World', 'fixtures.foo');
     $path = __DIR__.'/fixtures/foo.liquid';
     $cachePath = __DIR__.'/'.hash('xxh128', 'v2'.$path).'.php';
 

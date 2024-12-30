@@ -15,7 +15,8 @@ use Keepsuit\LaravelLiquid\Tags\ErrorTag;
 use Keepsuit\LaravelLiquid\Tags\GuestTag;
 use Keepsuit\LaravelLiquid\Tags\SessionTag;
 use Keepsuit\LaravelLiquid\Tags\ViteTag;
-use Keepsuit\Liquid\TemplateFactory;
+use Keepsuit\Liquid\Environment;
+use Keepsuit\Liquid\EnvironmentFactory;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -36,10 +37,10 @@ class LiquidServiceProvider extends PackageServiceProvider
             );
         });
 
-        $this->app->singleton(TemplateFactory::class, function (Application $app) {
-            return TemplateFactory::new()
+        $this->app->singleton('liquid.factory', function (Application $app): EnvironmentFactory {
+            return EnvironmentFactory::new()
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
-                ->setDebugMode($app->hasDebugModeEnabled())
+                ->setRethrowErrors($app->hasDebugModeEnabled())
                 ->registerTag(ViteTag::class)
                 ->registerTag(CsrfTag::class)
                 ->registerTag(SessionTag::class)
@@ -47,9 +48,13 @@ class LiquidServiceProvider extends PackageServiceProvider
                 ->registerTag(EnvTag::class)
                 ->registerTag(AuthTag::class)
                 ->registerTag(GuestTag::class)
-                ->registerFilter(UrlFilters::class)
-                ->registerFilter(TranslatorFilters::class)
-                ->registerFilter(DebugFilters::class);
+                ->registerFilters(UrlFilters::class)
+                ->registerFilters(TranslatorFilters::class)
+                ->registerFilters(DebugFilters::class);
+        });
+
+        $this->app->singleton('liquid.environment', function (Application $app): Environment {
+            return $app->make('liquid.factory')->build();
         });
 
         $this->app->singleton('liquid.compiler', function (Application $app) {
@@ -58,6 +63,12 @@ class LiquidServiceProvider extends PackageServiceProvider
                 cachePath: $app['config']['view.compiled'],
                 basePath: $app['config']->get('view.relative_hash', false) ? $app->basePath() : '',
                 shouldCache: (bool) $app['config']->get('view.cache', true),
+            );
+        });
+
+        $this->app->bind(Liquid::class, function (Application $app) {
+            return new Liquid(
+                environment: $app->make('liquid.environment')
             );
         });
 

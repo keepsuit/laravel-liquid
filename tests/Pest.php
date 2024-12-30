@@ -4,11 +4,13 @@ use Keepsuit\LaravelLiquid\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
 
-function newLiquidFactory(): \Keepsuit\Liquid\TemplateFactory
+function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
 {
-    return app(\Keepsuit\Liquid\TemplateFactory::class)
-        ->setRethrowExceptions()
-        ->setStrictVariables();
+    return app('liquid.factory')
+        ->setRethrowErrors()
+        ->setStrictVariables()
+        ->setStrictFilters()
+        ->build();
 }
 
 function setEnv(string $env): void

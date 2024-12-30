@@ -4,7 +4,7 @@ beforeEach(function () {
     makeViteManifest();
     app('config')->set('app.asset_url', 'https://example.com');
 
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 afterEach(function () {
@@ -12,32 +12,32 @@ afterEach(function () {
 });
 
 test('vite tag with single js entrypoint', function () {
-    $template = $this->factory->parseString('{% vite "resources/js/app.js" %}');
+    $template = $this->environment->parseString('{% vite "resources/js/app.js" %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single css entrypoint', function () {
-    $template = $this->factory->parseString('{% vite "resources/css/app.css" %}');
+    $template = $this->environment->parseString('{% vite "resources/css/app.css" %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" />');
 });
 
 test('vite tag with single multiple entrypoints', function () {
-    $template = $this->factory->parseString('{% vite "resources/css/app.css", "resources/js/app.js" %}');
+    $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js" %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single entrypoint and custom directory', function () {
     makeViteManifest('custom');
 
-    $template = $this->factory->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
+    $template = $this->environment->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
@@ -46,16 +46,16 @@ test('vite tag with single entrypoint and custom directory', function () {
 test('vite tag with multiple entrypoints and custom directory', function () {
     makeViteManifest('custom');
 
-    $template = $this->factory->parseString('{% vite "resources/css/app.css", "resources/js/app.js", directory: "custom" %}');
+    $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js", directory: "custom" %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<link rel="preload" as="style" href="https://example.com/custom/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/custom/assets/app.versioned.css" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
 });
 
 test('vite tag exports entrypoints after parsing', function () {
-    $template = $this->factory->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
+    $template = $this->environment->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
 
     $outputs = $template->getState()->outputs;
 
@@ -74,8 +74,8 @@ test('vite tag exports entrypoints after parsing', function () {
 test('vite tag exports preloads after rendering', function () {
     makeViteManifest();
 
-    $template = $this->factory->parseString('{% vite "resources/js/app.js" %}');
-    $template->render($this->factory->newRenderContext());
+    $template = $this->environment->parseString('{% vite "resources/js/app.js" %}');
+    $template->render($this->environment->newRenderContext());
 
     $outputs = $template->getState()->outputs;
 

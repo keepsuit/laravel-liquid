@@ -3,9 +3,9 @@
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
+use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
-use Keepsuit\Liquid\TemplateFactory;
 
 beforeEach(function () {
     $this->viewFinder = mock(FileViewFinder::class);
@@ -47,7 +47,7 @@ test('isExpired return false when cache is true and no file modification', funct
 });
 
 test('compiles file and returns content', function () {
-    $template = TemplateFactory::new()->parseString('Hello World', 'foo');
+    $template = Liquid::environment()->parseString('Hello World', 'foo');
 
     $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
     $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(true);
@@ -59,7 +59,7 @@ test('compiles file and returns content', function () {
 });
 
 test('compiles file and returns content creating directory', function () {
-    $template = TemplateFactory::new()->parseString('Hello World', 'foo');
+    $template = Liquid::environment()->parseString('Hello World', 'foo');
 
     $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
     $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(false);

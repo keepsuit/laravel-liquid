@@ -3,30 +3,30 @@
 namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Support\HtmlString;
+use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Template;
-use Keepsuit\Liquid\TemplateFactory;
 
 class Liquid
 {
     public function __construct(
-        protected TemplateFactory $factory
+        protected Environment $environment
     ) {}
 
     public function parse(string $view): Template
     {
-        return $this->factory->parseTemplate($view);
+        return $this->environment->parseTemplate($view);
     }
 
     public function render(string $view, array $data = []): HtmlString
     {
         $content = $this->parse($view)
-            ->render($this->factory->newRenderContext(environment: $data));
+            ->render($this->environment->newRenderContext(data: $data));
 
         return new HtmlString($content);
     }
 
-    public function factory(): TemplateFactory
+    public function environment(): Environment
     {
-        return $this->factory;
+        return $this->environment;
     }
 }

@@ -1,35 +1,35 @@
 <?php
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 it('env tag', function () {
-    $template = $this->factory->parseString('{% env "production" %}prod{% endenv %}');
+    $template = $this->environment->parseString('{% env "production" %}prod{% endenv %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('');
+    expect($template->render($this->environment->newRenderContext()))->toBe('');
 
     setEnv('production');
-    expect($template->render($this->factory->newRenderContext()))->toBe('prod');
+    expect($template->render($this->environment->newRenderContext()))->toBe('prod');
 });
 
 it('env tag multiple', function () {
-    $template = $this->factory->parseString('{% env "production", "staging" %}staging or production{% endenv %}');
+    $template = $this->environment->parseString('{% env "production", "staging" %}staging or production{% endenv %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('');
+    expect($template->render($this->environment->newRenderContext()))->toBe('');
 
     setEnv('production');
-    expect($template->render($this->factory->newRenderContext()))->toBe('staging or production');
+    expect($template->render($this->environment->newRenderContext()))->toBe('staging or production');
 
     setEnv('staging');
-    expect($template->render($this->factory->newRenderContext()))->toBe('staging or production');
+    expect($template->render($this->environment->newRenderContext()))->toBe('staging or production');
 });
 
 it('env tag else ', function () {
-    $template = $this->factory->parseString('{% env "production" %}prod{% else %}dev{% endenv %}');
+    $template = $this->environment->parseString('{% env "production" %}prod{% else %}dev{% endenv %}');
 
-    expect($template->render($this->factory->newRenderContext()))->toBe('dev');
+    expect($template->render($this->environment->newRenderContext()))->toBe('dev');
 
     setEnv('production');
-    expect($template->render($this->factory->newRenderContext()))->toBe('prod');
+    expect($template->render($this->environment->newRenderContext()))->toBe('prod');
 });
