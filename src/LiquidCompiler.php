@@ -8,16 +8,14 @@ use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\ViewException;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
+use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Template;
-use Keepsuit\Liquid\TemplateFactory;
 
 class LiquidCompiler extends Compiler implements CompilerInterface
 {
-    protected ?TemplateFactory $factory = null;
-
     public function compile($path): void
     {
         if (! $this->cachePath) {
@@ -25,7 +23,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $template = $this->getTemplateFactory()->parseTemplate($this->getTemplateNameFromPath($path));
+            $template = $this->getEnvironment()->parseTemplate($this->getTemplateNameFromPath($path));
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }
@@ -48,8 +46,8 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $context = $this->getTemplateFactory()->newRenderContext(
-                environment: $data,
+            $context = $this->getEnvironment()->newRenderContext(
+                data: $data,
             );
 
             return $template->render($context);
@@ -63,13 +61,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         return Container::getInstance()->make(LaravelLiquidFileSystem::class)->getTemplateNameFromPath($path);
     }
 
-    protected function getTemplateFactory(): TemplateFactory
+    protected function getEnvironment(): Environment
     {
-        if ($this->factory === null) {
-            $this->factory = Container::getInstance()->make(TemplateFactory::class);
-        }
-
-        return $this->factory;
+        return Container::getInstance()->make('liquid.environment');
     }
 
     /**

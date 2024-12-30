@@ -1,7 +1,7 @@
 <?php
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 it('renders csrf input', function () {
@@ -9,8 +9,8 @@ it('renders csrf input', function () {
         ->shouldReceive('token')
         ->andReturn('csrf-token-value');
 
-    $template = $this->factory->parseString('{% csrf %}');
+    $template = $this->environment->parseString('{% csrf %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('<input type="hidden" name="_token" value="csrf-token-value" autocomplete="off">');
 });

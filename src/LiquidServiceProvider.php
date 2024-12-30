@@ -2,20 +2,13 @@
 
 namespace Keepsuit\LaravelLiquid;
 
+use Clockwork\Clockwork;
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
-use Keepsuit\LaravelLiquid\Filters\DebugFilters;
-use Keepsuit\LaravelLiquid\Filters\TranslatorFilters;
-use Keepsuit\LaravelLiquid\Filters\UrlFilters;
+use Keepsuit\LaravelLiquid\Support\Clockwork\LiquidDataSource;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
-use Keepsuit\LaravelLiquid\Tags\AuthTag;
-use Keepsuit\LaravelLiquid\Tags\CsrfTag;
-use Keepsuit\LaravelLiquid\Tags\EnvTag;
-use Keepsuit\LaravelLiquid\Tags\ErrorTag;
-use Keepsuit\LaravelLiquid\Tags\GuestTag;
-use Keepsuit\LaravelLiquid\Tags\SessionTag;
-use Keepsuit\LaravelLiquid\Tags\ViteTag;
-use Keepsuit\Liquid\TemplateFactory;
+use Keepsuit\Liquid\Environment;
+use Keepsuit\Liquid\EnvironmentFactory;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -36,20 +29,15 @@ class LiquidServiceProvider extends PackageServiceProvider
             );
         });
 
-        $this->app->singleton(TemplateFactory::class, function (Application $app) {
-            return TemplateFactory::new()
+        $this->app->singleton('liquid.factory', function (Application $app): EnvironmentFactory {
+            return EnvironmentFactory::new()
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
-                ->setDebugMode($app->hasDebugModeEnabled())
-                ->registerTag(ViteTag::class)
-                ->registerTag(CsrfTag::class)
-                ->registerTag(SessionTag::class)
-                ->registerTag(ErrorTag::class)
-                ->registerTag(EnvTag::class)
-                ->registerTag(AuthTag::class)
-                ->registerTag(GuestTag::class)
-                ->registerFilter(UrlFilters::class)
-                ->registerFilter(TranslatorFilters::class)
-                ->registerFilter(DebugFilters::class);
+                ->setRethrowErrors($app->hasDebugModeEnabled())
+                ->addExtension(new LaravelLiquidExtension);
+        });
+
+        $this->app->singleton('liquid.environment', function (Application $app): Environment {
+            return $app->make('liquid.factory')->build();
         });
 
         $this->app->singleton('liquid.compiler', function (Application $app) {
@@ -58,6 +46,12 @@ class LiquidServiceProvider extends PackageServiceProvider
                 cachePath: $app['config']['view.compiled'],
                 basePath: $app['config']->get('view.relative_hash', false) ? $app->basePath() : '',
                 shouldCache: (bool) $app['config']->get('view.cache', true),
+            );
+        });
+
+        $this->app->bind(Liquid::class, function (Application $app) {
+            return new Liquid(
+                environment: $app->make('liquid.environment')
             );
         });
 
@@ -74,6 +68,26 @@ class LiquidServiceProvider extends PackageServiceProvider
 
                 return $liquidEngine;
             });
+        });
+
+        $this->registerClockwork();
+    }
+
+    protected function registerClockwork(): void
+    {
+        if (! class_exists(\Clockwork\Clockwork::class)) {
+            return;
+        }
+
+        $this->app->singleton('clockwork.liquid', function (Application $app) {
+            return new LiquidDataSource($app->make('liquid.environment'));
+        });
+
+        $this->callAfterResolving('clockwork', function (Clockwork $clockwork) {
+            $dataSource = $this->app->make('clockwork.liquid');
+            assert($dataSource instanceof LiquidDataSource);
+            $clockwork->addDataSource($dataSource);
+            $dataSource->listenToEvents();
         });
     }
 }

@@ -3,13 +3,13 @@
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 it('error tag valid', function () {
-    $template = $this->factory->parseString('{% error "name" %}name is required{% enderror %}');
+    $template = $this->environment->parseString('{% error "name" %}name is required{% enderror %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('');
 });
 
@@ -19,9 +19,9 @@ it('error tag invalid', function () {
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);
 
-    $template = $this->factory->parseString('{% error "name" %}name is required{% enderror %}');
+    $template = $this->environment->parseString('{% error "name" %}name is required{% enderror %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('name is required');
 });
 
@@ -31,9 +31,9 @@ it('error tag invalid pass message to body', function () {
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);
 
-    $template = $this->factory->parseString('{% error "name" %}message: {{message}}{% enderror %}');
+    $template = $this->environment->parseString('{% error "name" %}message: {{message}}{% enderror %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('message: name is required');
 });
 
@@ -43,8 +43,8 @@ it('error tag custom bag', function () {
     $mock = Session::partialMock();
     $mock->shouldReceive('get', 'errors')->andReturn($errorBag);
 
-    $template = $this->factory->parseString('{% error "name", bag: "custom" %}message: {{message}}{% enderror %}');
+    $template = $this->environment->parseString('{% error "name", bag: "custom" %}message: {{message}}{% enderror %}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('message: name is required');
 });

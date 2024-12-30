@@ -1,7 +1,7 @@
 <?php
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 
     /** @var \Illuminate\Translation\Translator $translator */
     $translator = app('translator');
@@ -20,61 +20,61 @@ beforeEach(function () {
 });
 
 test('trans filter', function () {
-    $template = $this->factory->parseString('{{ "home.title" | trans }}');
+    $template = $this->environment->parseString('{{ "home.title" | trans }}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Home page title');
 
     app()->setLocale('it');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Titolo della pagina principale');
 });
 
 test('t filter alias', function () {
-    $template = $this->factory->parseString('{{ "home.title" | t }}');
+    $template = $this->environment->parseString('{{ "home.title" | t }}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Home page title');
 
     app()->setLocale('it');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Titolo della pagina principale');
 });
 
 test('trans filter with param', function () {
-    $template = $this->factory->parseString('{{ "home.counter" | trans: value: 3 }}');
+    $template = $this->environment->parseString('{{ "home.counter" | trans: value: 3 }}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('3 items');
 
     app()->setLocale('it');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('3 elementi');
 });
 
 test('trans_choice filter', function () {
-    $template = $this->factory->parseString('{{ "home.choice" | trans_choice: 0 }}|{{ "home.choice" | trans_choice: 1 }}|{{ "home.choice" | trans_choice: 2 }}');
+    $template = $this->environment->parseString('{{ "home.choice" | trans_choice: 0 }}|{{ "home.choice" | trans_choice: 1 }}|{{ "home.choice" | trans_choice: 2 }}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('No items|1 item|2 items');
 
     app()->setLocale('it');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Nessun elemento|1 elemento|2 elementi');
 });
 
 test('trans_choice filter with param', function () {
-    $template = $this->factory->parseString('{{ "home.choice_param" | trans_choice: 0, value: 9 }}|{{ "home.choice_param" | trans_choice: 1, value: 9 }}|{{ "home.choice_param" | trans_choice: 2, value: 9 }}');
+    $template = $this->environment->parseString('{{ "home.choice_param" | trans_choice: 0, value: 9 }}|{{ "home.choice_param" | trans_choice: 1, value: 9 }}|{{ "home.choice_param" | trans_choice: 2, value: 9 }}');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('No items|9 item|9 items');
 
     app()->setLocale('it');
 
-    expect($template->render($this->factory->newRenderContext()))
+    expect($template->render($this->environment->newRenderContext()))
         ->toBe('Nessun elemento|9 elemento|9 elementi');
 });

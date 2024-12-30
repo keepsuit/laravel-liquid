@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          composer remove --dev larastan/larastan --no-interaction --no-update
           composer require "illuminate/contracts:${{ matrix.laravel }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 

@@ -1,41 +1,41 @@
 <?php
 
 beforeEach(function () {
-    $this->factory = newLiquidFactory();
+    $this->environment = newLiquidEnvironment();
 });
 
 test('asset filter', function () {
-    expect($this->factory->parseString('{{ "css/app.css" | asset }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "css/app.css" | asset }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/css/app.css');
 });
 
 test('secure asset filter', function () {
-    expect($this->factory->parseString('{{ "css/app.css" | secure_asset }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "css/app.css" | secure_asset }}')->render($this->environment->newRenderContext()))
         ->toBe('https://localhost/css/app.css');
 });
 
 test('route filter', function () {
     \Illuminate\Support\Facades\Route::get('home')->name('home');
 
-    expect($this->factory->parseString('{{ "home" | route }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "home" | route }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/home');
 });
 
 test('url filter', function () {
-    expect($this->factory->parseString('{{ "user/profile" | url }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "user/profile" | url }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/user/profile');
 });
 
 test('secure url filter', function () {
-    expect($this->factory->parseString('{{ "user/profile" | secure_url }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "user/profile" | secure_url }}')->render($this->environment->newRenderContext()))
         ->toBe('https://localhost/user/profile');
 });
 
 test('route filter with params', function () {
     \Illuminate\Support\Facades\Route::get('products/{product}')->name('product');
 
-    expect($this->factory->parseString('{{ "product" | route: product:1  }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "product" | route: product:1  }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/products/1');
-    expect($this->factory->parseString('{{ "product" | route: 2  }}')->render($this->factory->newRenderContext()))
+    expect($this->environment->parseString('{{ "product" | route: 2  }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/products/2');
 });

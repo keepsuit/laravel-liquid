@@ -26,11 +26,6 @@ class LiquidEngine extends PhpEngine
         parent::__construct($files);
     }
 
-    public function getCompiler(): LiquidCompiler
-    {
-        return $this->compiler;
-    }
-
     public function get($path, array $data = []): ?string
     {
         $this->lastCompiled[] = $path;
