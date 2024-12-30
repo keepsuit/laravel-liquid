@@ -2,8 +2,10 @@
 
 namespace Keepsuit\LaravelLiquid;
 
+use Clockwork\Clockwork;
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
+use Keepsuit\LaravelLiquid\Support\Clockwork\LiquidDataSource;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\EnvironmentFactory;
@@ -66,6 +68,26 @@ class LiquidServiceProvider extends PackageServiceProvider
 
                 return $liquidEngine;
             });
+        });
+
+        $this->registerClockwork();
+    }
+
+    protected function registerClockwork(): void
+    {
+        if (! class_exists(\Clockwork\Clockwork::class)) {
+            return;
+        }
+
+        $this->app->singleton('clockwork.liquid', function (Application $app) {
+            return new LiquidDataSource($app->make('liquid.environment'));
+        });
+
+        $this->callAfterResolving('clockwork', function (Clockwork $clockwork) {
+            $dataSource = $this->app->make('clockwork.liquid');
+            assert($dataSource instanceof LiquidDataSource);
+            $clockwork->addDataSource($dataSource);
+            $dataSource->listenToEvents();
         });
     }
 }
