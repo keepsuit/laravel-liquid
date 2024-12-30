@@ -4,17 +4,7 @@ namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
-use Keepsuit\LaravelLiquid\Filters\DebugFilters;
-use Keepsuit\LaravelLiquid\Filters\TranslatorFilters;
-use Keepsuit\LaravelLiquid\Filters\UrlFilters;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
-use Keepsuit\LaravelLiquid\Tags\AuthTag;
-use Keepsuit\LaravelLiquid\Tags\CsrfTag;
-use Keepsuit\LaravelLiquid\Tags\EnvTag;
-use Keepsuit\LaravelLiquid\Tags\ErrorTag;
-use Keepsuit\LaravelLiquid\Tags\GuestTag;
-use Keepsuit\LaravelLiquid\Tags\SessionTag;
-use Keepsuit\LaravelLiquid\Tags\ViteTag;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\EnvironmentFactory;
 use Spatie\LaravelPackageTools\Package;
@@ -41,16 +31,7 @@ class LiquidServiceProvider extends PackageServiceProvider
             return EnvironmentFactory::new()
                 ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
                 ->setRethrowErrors($app->hasDebugModeEnabled())
-                ->registerTag(ViteTag::class)
-                ->registerTag(CsrfTag::class)
-                ->registerTag(SessionTag::class)
-                ->registerTag(ErrorTag::class)
-                ->registerTag(EnvTag::class)
-                ->registerTag(AuthTag::class)
-                ->registerTag(GuestTag::class)
-                ->registerFilters(UrlFilters::class)
-                ->registerFilters(TranslatorFilters::class)
-                ->registerFilters(DebugFilters::class);
+                ->addExtension(new LaravelLiquidExtension);
         });
 
         $this->app->singleton('liquid.environment', function (Application $app): Environment {
