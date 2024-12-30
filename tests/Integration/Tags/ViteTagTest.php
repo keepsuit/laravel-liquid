@@ -57,7 +57,7 @@ test('vite tag with multiple entrypoints and custom directory', function () {
 test('vite tag exports entrypoints after parsing', function () {
     $template = $this->environment->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
 
-    $outputs = $template->getState()->outputs;
+    $outputs = $template->getState()->outputs->all();
 
     expect($outputs)
         ->toHaveKey('vite_entrypoints')
@@ -77,7 +77,7 @@ test('vite tag exports preloads after rendering', function () {
     $template = $this->environment->parseString('{% vite "resources/js/app.js" %}');
     $template->render($this->environment->newRenderContext());
 
-    $outputs = $template->getState()->outputs;
+    $outputs = $template->getState()->outputs->all();
 
     expect($outputs)
         ->toHaveKey('vite_entrypoints')
