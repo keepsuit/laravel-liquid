@@ -17,9 +17,7 @@ class LaravelLiquidFileSystem implements LiquidFileSystem
 
     public function readTemplateFile(string $templateName): string
     {
-        $path = $this->viewFinder->find($templateName);
-
-        return $this->files->get($path);
+        return $this->files->get($this->getPathFromTemplateName($templateName));
     }
 
     public function getTemplateNameFromPath(string $path): string
@@ -37,5 +35,10 @@ class LaravelLiquidFileSystem implements LiquidFileSystem
         }
 
         return $templateName;
+    }
+
+    public function getPathFromTemplateName(string $templateName): string
+    {
+        return $this->viewFinder->find($templateName);
     }
 }

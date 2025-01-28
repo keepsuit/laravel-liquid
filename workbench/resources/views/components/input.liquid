@@ -1,0 +1,8 @@
+<div>
+    <label for="{{ id }}" class="block text-gray-700">{{ label }}</label>
+    {% if type == 'textarea' %}
+        <textarea id="{{ id }}" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+    {% else %}
+        <input type="{{ type | default: 'text' }}" id="{{ id }}" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    {% endif %}
+</div>

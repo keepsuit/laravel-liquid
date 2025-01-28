@@ -23,27 +23,41 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $template = $this->getEnvironment()->parseTemplate($this->getTemplateNameFromPath($path));
+            $template = $this->getEnvironment()->parseTemplate(
+                $this->getTemplateNameFromPath($path),
+            );
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }
 
-        $this->ensureCompiledDirectoryExists($this->getCompiledPath($path));
+        $this->saveCompiledTemplate($template);
+    }
 
-        $this->files->put($this->getCompiledPath($path), serialize($template));
+    public function saveCompiledTemplate(Template $template): void
+    {
+        if ($template->name() === null) {
+            return;
+        }
+
+        $path = $this->getPathFromTemplateName($template->name());
+
+        $compiledPath = $this->getCompiledPath($path);
+        $this->ensureCompiledDirectoryExists($compiledPath);
+        $this->files->put($compiledPath, serialize($template));
     }
 
     /**
      * @throws ViewException
-     * @throws FileNotFoundException
      */
     public function render(string $path, array $data): string
     {
-        $template = unserialize($this->files->get($this->getCompiledPath($path)));
+        $template = $this->resolveTemplateByPath($path);
 
         if (! $template instanceof Template) {
             throw new \Exception('Template is not an instance of Template');
         }
+
+        $this->ensureTemplatePartialsAreCompiled($template);
 
         try {
             $context = $this->getEnvironment()->newRenderContext(
@@ -56,9 +70,41 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
     }
 
+    public function resolveTemplateByName(string $name): ?Template
+    {
+        $path = $this->getPathFromTemplateName($name);
+
+        return $this->resolveTemplateByPath($path);
+    }
+
+    public function resolveTemplateByPath(string $path): ?Template
+    {
+        try {
+            $compiled = unserialize($this->files->get($this->getCompiledPath($path)));
+
+            if (! $compiled instanceof Template) {
+                throw new \RuntimeException('Invalid compiled template');
+            }
+
+            return $compiled;
+        } catch (FileNotFoundException $e) {
+            return null;
+        }
+    }
+
     protected function getTemplateNameFromPath(string $path): string
     {
-        return Container::getInstance()->make(LaravelLiquidFileSystem::class)->getTemplateNameFromPath($path);
+        return $this->getFilesystem()->getTemplateNameFromPath($path);
+    }
+
+    protected function getPathFromTemplateName(string $templateName): string
+    {
+        return $this->getFilesystem()->getPathFromTemplateName($templateName);
+    }
+
+    protected function getFilesystem(): LaravelLiquidFileSystem
+    {
+        return Container::getInstance()->make(LaravelLiquidFileSystem::class);
     }
 
     protected function getEnvironment(): Environment
@@ -85,5 +131,15 @@ class LiquidCompiler extends Compiler implements CompilerInterface
                 default => $e,
             },
         );
+    }
+
+    protected function ensureTemplatePartialsAreCompiled(Template $template): void
+    {
+        foreach ($template->state->partials as $partial) {
+            $path = $this->getPathFromTemplateName($partial);
+            if (! $this->files->exists($this->getCompiledPath($path))) {
+                $this->compile($path);
+            }
+        }
     }
 }
