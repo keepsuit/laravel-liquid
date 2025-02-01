@@ -4,10 +4,13 @@ namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
-use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
@@ -23,14 +26,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $template = $this->getEnvironment()->parseTemplate(
+            $this->getEnvironment()->parseTemplate(
                 $this->getTemplateNameFromPath($path),
             );
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }
-
-        $this->saveCompiledTemplate($template);
     }
 
     public function saveCompiledTemplate(Template $template): void
@@ -51,7 +52,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function render(string $path, array $data): string
     {
-        $template = $this->resolveTemplateByPath($path);
+        $template = $this->resolveCompiledTemplateByPath($path);
 
         if (! $template instanceof Template) {
             throw new \Exception('Template is not an instance of Template');
@@ -70,20 +71,13 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
     }
 
-    public function resolveTemplateByName(string $name): ?Template
-    {
-        $path = $this->getPathFromTemplateName($name);
-
-        return $this->resolveTemplateByPath($path);
-    }
-
-    public function resolveTemplateByPath(string $path): ?Template
+    public function resolveCompiledTemplateByPath(string $path): ?Template
     {
         try {
             $compiled = unserialize($this->files->get($this->getCompiledPath($path)));
 
             if (! $compiled instanceof Template) {
-                throw new \RuntimeException('Invalid compiled template');
+                return null;
             }
 
             return $compiled;
@@ -92,24 +86,44 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
     }
 
-    protected function getTemplateNameFromPath(string $path): string
+    /**
+     * @throws FileNotFoundException
+     */
+    public function getTemplateNameFromPath(string $path): string
     {
-        return $this->getFilesystem()->getTemplateNameFromPath($path);
+        $templateName = Collection::make($this->getViewFinder()->getViews())
+            ->mapWithKeys(fn (string $templatePath, string $templateName) => [$templatePath => $templateName])
+            ->get($path);
+
+        if ($templateName === null) {
+            throw new FileNotFoundException('Template not found from path: '.$path);
+        }
+
+        return $templateName;
     }
 
-    protected function getPathFromTemplateName(string $templateName): string
+    public function getPathFromTemplateName(string $templateName): string
     {
-        return $this->getFilesystem()->getPathFromTemplateName($templateName);
-    }
-
-    protected function getFilesystem(): LaravelLiquidFileSystem
-    {
-        return Container::getInstance()->make(LaravelLiquidFileSystem::class);
+        return $this->getViewFinder()->find($templateName);
     }
 
     protected function getEnvironment(): Environment
     {
         return Container::getInstance()->make('liquid.environment');
+    }
+
+    public function getViewFinder(): FileViewFinder
+    {
+        $viewFinder = Container::getInstance()->make(Factory::class)->getFinder();
+
+        assert($viewFinder instanceof FileViewFinder, 'ViewFinder must be an instance of FileViewFinder');
+
+        return $viewFinder;
+    }
+
+    public function getFiles(): Filesystem
+    {
+        return $this->files;
     }
 
     /**

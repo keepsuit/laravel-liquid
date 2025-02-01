@@ -23,17 +23,18 @@ class LiquidServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(LaravelLiquidFileSystem::class, function (Application $app) {
-            return new LaravelLiquidFileSystem(
-                files: $app->make('files'),
-                viewFinder: $app->make(Factory::class)->getFinder()
-            );
-        });
-
         $this->app->singleton('liquid.factory', function (Application $app): EnvironmentFactory {
+            $filesystem = new LaravelLiquidFileSystem(
+                compiler: $app->make('liquid.compiler')
+            );
+
+            $templatesCache = new LaravelTemplatesCache(
+                compiler: $app->make('liquid.compiler')
+            );
+
             return EnvironmentFactory::new()
-                ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
-                ->setTemplatesCache(new LaravelTemplatesCache($app->make('liquid.compiler')))
+                ->setFilesystem($filesystem)
+                ->setTemplatesCache($templatesCache)
                 ->setRethrowErrors($app->hasDebugModeEnabled())
                 ->addExtension(new LaravelLiquidExtension);
         });

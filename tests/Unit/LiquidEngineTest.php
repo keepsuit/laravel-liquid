@@ -7,40 +7,45 @@ use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\LiquidEngine;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
+use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 
 beforeEach(function () {
     $this->viewFinder = mock(FileViewFinder::class);
     $viewFactory = mock(Factory::class);
     $viewFactory->shouldReceive('getFinder')->andReturn($this->viewFinder);
     $this->files = mock(Filesystem::class);
-    $this->app->bind(Factory::class, fn () => $viewFactory);
-    $this->app->bind(LaravelLiquidFileSystem::class, fn () => new LaravelLiquidFileSystem(
-        files: $this->files,
-        viewFinder: $this->viewFinder,
-    ));
 
+    $compiler = new LiquidCompiler(
+        files: $this->files,
+        cachePath: __DIR__
+    );
     $this->engine = new LiquidEngine(
-        new LiquidCompiler(
-            files: $this->files,
-            cachePath: __DIR__
-        ),
+        $compiler,
         $this->files
     );
+
+    $this->app->bind(\Illuminate\Contracts\View\Factory::class, fn () => $viewFactory);
+    $this->app->bind('liquid.environment', fn () => $this->app->make('liquid.factory')
+        ->setTemplatesCache(new LaravelTemplatesCache($compiler))
+        ->setFilesystem(new LaravelLiquidFileSystem($compiler))
+        ->build());
 });
 
 test('views may be recompiled and rerendered', function () {
     $template = Liquid::environment()->parseString('Hello World', 'fixtures.foo');
     $path = __DIR__.'/fixtures/foo.liquid';
-    $cachePath = __DIR__.'/'.hash('xxh128', 'v2'.$path).'.php';
+    $compiledPath = __DIR__.'/'.hash('xxh128', 'v2'.$path).'.php';
 
-    $this->files->shouldReceive('exists')->once()->with($cachePath)->andReturn(true);
-    $this->files->shouldReceive('lastModified')->andReturn(100);
-    $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(true);
-    $this->files->shouldReceive('get')->once()->with($path)->andReturn('Hello World');
-    $this->files->shouldReceive('put')->once()->with($cachePath, serialize($template))->andReturn(true);
-    $this->files->shouldReceive('get')->once()->with($cachePath)->andReturn(serialize($template));
     $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['fixtures.foo' => $path]);
-    $this->viewFinder->shouldReceive('find')->once()->with('fixtures.foo')->andReturn($path);
+    $this->viewFinder->shouldReceive('find')->with('fixtures.foo')->andReturn($path);
+
+    $this->files->shouldReceive('exists')->with($compiledPath)->andReturn(true);
+    $this->files->shouldReceive('lastModified')->andReturn(100);
+
+    $this->files->shouldReceive('get')->with($compiledPath)->andReturn(serialize($template));
+    $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(true);
+    $this->files->shouldReceive('put')->once()->with($compiledPath, serialize($template))->andReturn(true);
+    $this->files->shouldReceive('get')->once()->with($path)->andReturn('Hello World');
 
     $results = $this->engine->get($path);
 

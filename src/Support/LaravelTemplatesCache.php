@@ -14,11 +14,19 @@ class LaravelTemplatesCache extends TemplatesCache
 
     public function get(string $name): ?Template
     {
+        $path = $this->compiler->getPathFromTemplateName($name);
+
+        if ($this->compiler->isExpired($path)) {
+            unset($this->cache[$name]);
+
+            return null;
+        }
+
         if ($template = parent::get($name)) {
             return $template;
         }
 
-        $template = $this->compiler->resolveTemplateByName($name);
+        $template = $this->compiler->resolveCompiledTemplateByPath($path);
 
         if ($template !== null) {
             $this->set($name, $template);
@@ -37,5 +45,12 @@ class LaravelTemplatesCache extends TemplatesCache
     public function has(string $name): bool
     {
         return $this->get($name) !== null;
+    }
+
+    public function remove(string $name): void
+    {
+        //        parent::remove($name);
+
+        unset($this->cache[$name]);
     }
 }
