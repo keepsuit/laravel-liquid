@@ -4,10 +4,13 @@ namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
-use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
@@ -23,27 +26,39 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $template = $this->getEnvironment()->parseTemplate($this->getTemplateNameFromPath($path));
+            $this->getEnvironment()->parseTemplate(
+                $this->getTemplateNameFromPath($path),
+            );
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }
+    }
 
-        $this->ensureCompiledDirectoryExists($this->getCompiledPath($path));
+    public function saveCompiledTemplate(Template $template): void
+    {
+        if ($template->name() === null) {
+            return;
+        }
 
-        $this->files->put($this->getCompiledPath($path), serialize($template));
+        $path = $this->getPathFromTemplateName($template->name());
+
+        $compiledPath = $this->getCompiledPath($path);
+        $this->ensureCompiledDirectoryExists($compiledPath);
+        $this->files->put($compiledPath, serialize($template));
     }
 
     /**
      * @throws ViewException
-     * @throws FileNotFoundException
      */
     public function render(string $path, array $data): string
     {
-        $template = unserialize($this->files->get($this->getCompiledPath($path)));
+        $template = $this->resolveCompiledTemplateByPath($path);
 
         if (! $template instanceof Template) {
             throw new \Exception('Template is not an instance of Template');
         }
+
+        $this->ensureTemplatePartialsAreCompiled($template);
 
         try {
             $context = $this->getEnvironment()->newRenderContext(
@@ -56,14 +71,59 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
     }
 
-    protected function getTemplateNameFromPath(string $path): string
+    public function resolveCompiledTemplateByPath(string $path): ?Template
     {
-        return Container::getInstance()->make(LaravelLiquidFileSystem::class)->getTemplateNameFromPath($path);
+        try {
+            $compiled = unserialize($this->files->get($this->getCompiledPath($path)));
+
+            if (! $compiled instanceof Template) {
+                return null;
+            }
+
+            return $compiled;
+        } catch (FileNotFoundException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     */
+    public function getTemplateNameFromPath(string $path): string
+    {
+        $templateName = Collection::make($this->getViewFinder()->getViews())
+            ->mapWithKeys(fn (string $templatePath, string $templateName) => [$templatePath => $templateName])
+            ->get($path);
+
+        if ($templateName === null) {
+            throw new FileNotFoundException('Template not found from path: '.$path);
+        }
+
+        return $templateName;
+    }
+
+    public function getPathFromTemplateName(string $templateName): string
+    {
+        return $this->getViewFinder()->find($templateName);
     }
 
     protected function getEnvironment(): Environment
     {
         return Container::getInstance()->make('liquid.environment');
+    }
+
+    public function getViewFinder(): FileViewFinder
+    {
+        $viewFinder = Container::getInstance()->make(Factory::class)->getFinder();
+
+        assert($viewFinder instanceof FileViewFinder, 'ViewFinder must be an instance of FileViewFinder');
+
+        return $viewFinder;
+    }
+
+    public function getFiles(): Filesystem
+    {
+        return $this->files;
     }
 
     /**
@@ -85,5 +145,15 @@ class LiquidCompiler extends Compiler implements CompilerInterface
                 default => $e,
             },
         );
+    }
+
+    protected function ensureTemplatePartialsAreCompiled(Template $template): void
+    {
+        foreach ($template->state->partials as $partial) {
+            $path = $this->getPathFromTemplateName($partial);
+            if (! $this->files->exists($this->getCompiledPath($path))) {
+                $this->compile($path);
+            }
+        }
     }
 }

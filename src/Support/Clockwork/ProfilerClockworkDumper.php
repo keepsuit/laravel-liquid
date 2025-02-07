@@ -28,13 +28,6 @@ class ProfilerClockworkDumper
 
     protected function dumpProfile(Profile $profile, Timeline $timeline, ?int $parentId = null): void
     {
-        //        if ($profile->type !== ProfileType::Template) {
-        //            foreach ($profile->getChildren() as $child) {
-        //                $this->dumpProfile($child, $timeline, $parentId);
-        //            }
-        //            return;
-        //        }
-
         $id = $this->lastId++;
         $name = match ($profile->type) {
             ProfileType::Tag, ProfileType::Variable => sprintf('%s (%s)', $profile->type->value, $profile->name),
@@ -45,7 +38,7 @@ class ProfilerClockworkDumper
             $this->dumpProfile($child, $timeline, $id);
         }
 
-        $timeline->event($name, [
+        $timeline->event(sprintf('liquid::%s', $name), [
             'name' => $id,
             'start' => $profile->getStartTime(),
             'end' => $profile->getEndTime(),

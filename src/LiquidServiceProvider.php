@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\View\Factory;
 use Keepsuit\LaravelLiquid\Support\Clockwork\LiquidDataSource;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
+use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\EnvironmentFactory;
 use Spatie\LaravelPackageTools\Package;
@@ -22,16 +23,18 @@ class LiquidServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(LaravelLiquidFileSystem::class, function (Application $app) {
-            return new LaravelLiquidFileSystem(
-                files: $app->make('files'),
-                viewFinder: $app->make(Factory::class)->getFinder()
-            );
-        });
-
         $this->app->singleton('liquid.factory', function (Application $app): EnvironmentFactory {
+            $filesystem = new LaravelLiquidFileSystem(
+                compiler: $app->make('liquid.compiler')
+            );
+
+            $templatesCache = new LaravelTemplatesCache(
+                compiler: $app->make('liquid.compiler')
+            );
+
             return EnvironmentFactory::new()
-                ->setFilesystem($app->make(LaravelLiquidFileSystem::class))
+                ->setFilesystem($filesystem)
+                ->setTemplatesCache($templatesCache)
                 ->setRethrowErrors($app->hasDebugModeEnabled())
                 ->addExtension(new LaravelLiquidExtension);
         });
