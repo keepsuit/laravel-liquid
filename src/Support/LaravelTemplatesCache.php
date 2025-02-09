@@ -3,10 +3,10 @@
 namespace Keepsuit\LaravelLiquid\Support;
 
 use Keepsuit\LaravelLiquid\LiquidCompiler;
-use Keepsuit\Liquid\Support\TemplatesCache;
 use Keepsuit\Liquid\Template;
+use Keepsuit\Liquid\TemplatesCache\MemoryTemplatesCache;
 
-class LaravelTemplatesCache extends TemplatesCache
+class LaravelTemplatesCache extends MemoryTemplatesCache
 {
     public function __construct(
         protected LiquidCompiler $compiler,
@@ -29,7 +29,7 @@ class LaravelTemplatesCache extends TemplatesCache
         $template = $this->compiler->resolveCompiledTemplateByPath($path);
 
         if ($template !== null) {
-            $this->set($name, $template);
+            parent::set($name, $template);
         }
 
         return $template;
@@ -49,8 +49,15 @@ class LaravelTemplatesCache extends TemplatesCache
 
     public function remove(string $name): void
     {
-        //        parent::remove($name);
-
         unset($this->cache[$name]);
+
+        $this->compiler->removeCompiledTemplate($name);
+    }
+
+    public function clear(): void
+    {
+        parent::clear();
+
+        $this->compiler->clearCompiledTemplates();
     }
 }

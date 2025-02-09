@@ -16,6 +16,7 @@ use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Template;
+use Symfony\Component\VarExporter\VarExporter;
 
 class LiquidCompiler extends Compiler implements CompilerInterface
 {
@@ -43,8 +44,35 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         $path = $this->getPathFromTemplateName($template->name());
 
         $compiledPath = $this->getCompiledPath($path);
+
         $this->ensureCompiledDirectoryExists($compiledPath);
-        $this->files->put($compiledPath, serialize($template));
+
+        $this->files->put($compiledPath, '<?php return '.VarExporter::export($template).';');
+
+        try {
+            // Set the timestamp before the startup time to allow opcache to cache the file
+            if (is_numeric($_SERVER['REQUEST_TIME'])) {
+                touch($compiledPath, ((int) $_SERVER['REQUEST_TIME']) - 5);
+            }
+
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($compiledPath, true);
+            }
+        } catch (\Throwable) {
+        }
+    }
+
+    public function removeCompiledTemplate(string $templateName): void
+    {
+        $compiledPath = $this->getCompiledPath($this->getPathFromTemplateName($templateName));
+
+        $this->files->delete($compiledPath);
+    }
+
+    public function clearCompiledTemplates(): void
+    {
+        $this->files->deleteDirectory($this->cachePath);
+        $this->ensureCompiledDirectoryExists($this->cachePath);
     }
 
     /**
@@ -74,7 +102,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function resolveCompiledTemplateByPath(string $path): ?Template
     {
         try {
-            $compiled = unserialize($this->files->get($this->getCompiledPath($path)));
+            $compiled = require $this->getCompiledPath($path);
 
             if (! $compiled instanceof Template) {
                 return null;

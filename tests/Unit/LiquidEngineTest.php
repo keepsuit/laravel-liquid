@@ -3,7 +3,6 @@
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
-use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\LiquidEngine;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
@@ -13,16 +12,18 @@ beforeEach(function () {
     $this->viewFinder = mock(FileViewFinder::class);
     $viewFactory = mock(Factory::class);
     $viewFactory->shouldReceive('getFinder')->andReturn($this->viewFinder);
-    $this->files = mock(Filesystem::class);
+    $this->files = mock(Filesystem::class)->makePartial();
 
     $compiler = new LiquidCompiler(
         files: $this->files,
-        cachePath: __DIR__
+        cachePath: $this->cacheDir = __DIR__.'/../cache'
     );
     $this->engine = new LiquidEngine(
         $compiler,
         $this->files
     );
+
+    $this->files->deleteDirectory($this->cacheDir);
 
     $this->app->bind(\Illuminate\Contracts\View\Factory::class, fn () => $viewFactory);
     $this->app->bind('liquid.environment', fn () => $this->app->make('liquid.factory')
@@ -32,7 +33,6 @@ beforeEach(function () {
 });
 
 test('views may be recompiled and rerendered', function () {
-    $template = Liquid::environment()->parseString('Hello World', 'fixtures.foo');
     $path = __DIR__.'/fixtures/foo.liquid';
     $compiledPath = __DIR__.'/'.hash('xxh128', 'v2'.$path).'.php';
 
@@ -42,9 +42,6 @@ test('views may be recompiled and rerendered', function () {
     $this->files->shouldReceive('exists')->with($compiledPath)->andReturn(true);
     $this->files->shouldReceive('lastModified')->andReturn(100);
 
-    $this->files->shouldReceive('get')->with($compiledPath)->andReturn(serialize($template));
-    $this->files->shouldReceive('exists')->once()->with(__DIR__)->andReturn(true);
-    $this->files->shouldReceive('put')->once()->with($compiledPath, serialize($template))->andReturn(true);
     $this->files->shouldReceive('get')->once()->with($path)->andReturn('Hello World');
 
     $results = $this->engine->get($path);
