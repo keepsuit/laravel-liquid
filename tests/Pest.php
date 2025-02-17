@@ -7,9 +7,9 @@ uses(TestCase::class)->in(__DIR__);
 function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
 {
     return app('liquid.factory')
-        ->setRethrowErrors()
-        ->setStrictVariables()
-        ->setStrictFilters()
+        ->setRethrowErrors(true)
+        ->setStrictVariables(true)
+        ->setStrictFilters(true)
         ->build();
 }
 
