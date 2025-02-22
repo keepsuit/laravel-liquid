@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.5.0 - 2025-02-22
+
+### What's Changed
+
+* update to liquid 0.7 by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/23
+* Improve compile by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/26
+* export compiled templates with `symfony/var-exporter`
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.4.0...v0.5.0
+
 ## v0.4.0 - 2024-05-28
 
 ### What's Changed
