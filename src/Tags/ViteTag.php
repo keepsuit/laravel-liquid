@@ -5,7 +5,9 @@ namespace Keepsuit\LaravelLiquid\Tags;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Vite;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
+use Keepsuit\Liquid\Parse\ParseContext;
 use Keepsuit\Liquid\Parse\TagParseContext;
+use Keepsuit\Liquid\Parse\TokenStream;
 use Keepsuit\Liquid\Parse\TokenType;
 use Keepsuit\Liquid\Render\RenderContext;
 use Keepsuit\Liquid\Tag;
@@ -25,8 +27,43 @@ class ViteTag extends Tag
 
     public function parse(TagParseContext $context): static
     {
-        $tokens = $context->params;
+        $this->parseTokenStream($context->params);
 
+        $this->pushEntrypointsToContext($context->getParseContext());
+
+        return $this;
+    }
+
+    public function render(RenderContext $context): string
+    {
+        $originalVite = Container::getInstance()->make(Vite::class);
+        assert($originalVite instanceof Vite);
+        $vite = clone $originalVite;
+
+        if ($directory = $this->attributes['directory'] ?? null) {
+            $vite->useBuildDirectory($directory);
+        }
+
+        if ($hot = $this->attributes['hot'] ?? null) {
+            $vite->useHotFile($hot);
+        }
+
+        $content = $vite->withEntryPoints($this->entrypoints)->toHtml();
+
+        foreach ($vite->preloadedAssets() as $url => $attributes) {
+            $context->getOutputs()->push('vite_preloads', array_filter([
+                'href' => $url,
+                'attributes' => $attributes,
+                'directory' => $directory,
+                'hot' => $hot,
+            ]));
+        }
+
+        return $content;
+    }
+
+    protected function parseTokenStream(TokenStream $tokens): void
+    {
         $this->entrypoints = [];
         while ($entrypoint = $tokens->expression()) {
             if (! is_string($entrypoint)) {
@@ -53,26 +90,16 @@ class ViteTag extends Tag
         }
 
         $tokens->assertEnd();
-
-        $context->getParseContext()->getOutputs()->push(
-            'vite_entrypoints',
-            ...array_map(fn (string $entrypoint) => ['entrypoint' => $entrypoint, ...$this->attributes], $this->entrypoints)
-        );
-
-        return $this;
     }
 
-    public function render(RenderContext $context): string
+    protected function pushEntrypointsToContext(ParseContext $parseContext): void
     {
-        $vite = Container::getInstance()->make(Vite::class);
-        assert($vite instanceof Vite);
-
-        $content = $vite($this->entrypoints, $this->attributes['directory'] ?? null)->toHtml();
-
-        foreach ($vite->preloadedAssets() as $url => $attributes) {
-            $context->getOutputs()->push('vite_preloads', ['href' => $url, 'attributes' => $attributes]);
-        }
-
-        return $content;
+        $parseContext->getOutputs()->push(
+            'vite_entrypoints',
+            ...array_map(fn (string $entrypoint) => [
+                'entrypoint' => $entrypoint,
+                ...$this->attributes,
+            ], $this->entrypoints)
+        );
     }
 }
