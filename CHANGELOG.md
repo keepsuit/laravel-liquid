@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.5.2 - 2025-03-15
+
+### What's changed
+
+- Refactoring of `vite` tag and added support for custom `hot` file path.
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.5.1...v0.5.2
+
 ## v0.5.1 - 2025-02-23
 
 ### What's changed
