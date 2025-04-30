@@ -45,11 +45,15 @@ test('vite asset filter', function () {
 
     expect($this->environment->parseString('{{ "resources/assets/logo.png" | vite_asset }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/build/assets/logo-versioned.png');
-})->after(fn () => cleanViteManifest());
+
+    cleanViteManifest();
+});
 
 test('vite asset filter with custom directory', function () {
     makeViteManifest('custom');
 
     expect($this->environment->parseString('{{ "resources/assets/logo.png" | vite_asset: "custom" }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/custom/assets/logo-versioned.png');
-})->after(fn () => cleanViteManifest('custom'));
+
+    cleanViteManifest('custom');
+});
