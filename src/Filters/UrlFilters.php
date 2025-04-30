@@ -2,6 +2,7 @@
 
 namespace Keepsuit\LaravelLiquid\Filters;
 
+use Illuminate\Support\Facades\Vite;
 use Keepsuit\Liquid\Filters\FiltersProvider;
 
 class UrlFilters extends FiltersProvider
@@ -29,5 +30,10 @@ class UrlFilters extends FiltersProvider
     public function secureUrl(string $path): string
     {
         return secure_url($path);
+    }
+
+    public function viteAsset(string $path, ?string $buildDirectory = null): string
+    {
+        return Vite::asset($path, $buildDirectory);
     }
 }

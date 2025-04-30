@@ -39,3 +39,21 @@ test('route filter with params', function () {
     expect($this->environment->parseString('{{ "product" | route: 2  }}')->render($this->environment->newRenderContext()))
         ->toBe('http://localhost/products/2');
 });
+
+test('vite asset filter', function () {
+    makeViteManifest();
+
+    expect($this->environment->parseString('{{ "resources/assets/logo.png" | vite_asset }}')->render($this->environment->newRenderContext()))
+        ->toBe('http://localhost/build/assets/logo-versioned.png');
+
+    cleanViteManifest();
+});
+
+test('vite asset filter with custom directory', function () {
+    makeViteManifest('custom');
+
+    expect($this->environment->parseString('{{ "resources/assets/logo.png" | vite_asset: "custom" }}')->render($this->environment->newRenderContext()))
+        ->toBe('http://localhost/custom/assets/logo-versioned.png');
+
+    cleanViteManifest('custom');
+});
