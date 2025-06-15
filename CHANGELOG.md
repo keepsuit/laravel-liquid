@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.5.4 - 2025-06-15
+
+### What's Changed
+
+* Added support for `keepsuit/liquid` `v0.9`
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.5.3...v0.5.4
+
 ## v0.5.3 - 2025-04-30
 
 ### What's Changed
