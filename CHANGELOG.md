@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.5.5 - 2026-03-04
+
+### What's Changed
+
+* Allow `symfony/var-exporter` v8
+* Improve DebugFilters on nested structures
+* Bump stefanzweifel/git-auto-commit-action from 5 to 6 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/29
+* Bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/32
+* Bump actions/checkout from 4 to 5 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/31
+* Bump stefanzweifel/git-auto-commit-action from 6 to 7 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/33
+* Bump actions/checkout from 5 to 6 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/34
+* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/35
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.5.4...v0.5.5
+
 ## v0.5.4 - 2025-06-15
 
 ### What's Changed
