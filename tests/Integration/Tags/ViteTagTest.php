@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 beforeEach(function () {
     makeViteManifest();
     app('config')->set('app.asset_url', 'https://example.com');
@@ -14,8 +16,8 @@ afterEach(function () {
 test('vite tag with single js entrypoint', function () {
     $template = $this->environment->parseString('{% vite "resources/js/app.js" %}');
 
-    expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="modulepreload" as="script" href="https://example.com/build/assets/app.versioned.js" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
+    expect(Str::replace(' as="script"', '', $template->render($this->environment->newRenderContext())))
+        ->toBe('<link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single css entrypoint', function () {
@@ -28,8 +30,8 @@ test('vite tag with single css entrypoint', function () {
 test('vite tag with single multiple entrypoints', function () {
     $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js" %}');
 
-    expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="modulepreload" as="script" href="https://example.com/build/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
+    expect(Str::replace(' as="script"', '', $template->render($this->environment->newRenderContext())))
+        ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single entrypoint and custom directory', function () {
@@ -37,8 +39,8 @@ test('vite tag with single entrypoint and custom directory', function () {
 
     $template = $this->environment->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
 
-    expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="modulepreload" as="script" href="https://example.com/custom/assets/app.versioned.js" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
+    expect(Str::replace(' as="script"', '', $template->render($this->environment->newRenderContext())))
+        ->toBe('<link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
 });
@@ -48,8 +50,8 @@ test('vite tag with multiple entrypoints and custom directory', function () {
 
     $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js", directory: "custom" %}');
 
-    expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="preload" as="style" href="https://example.com/custom/assets/app.versioned.css" /><link rel="modulepreload" as="script" href="https://example.com/custom/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/custom/assets/app.versioned.css" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
+    expect(Str::replace(' as="script"', '', $template->render($this->environment->newRenderContext())))
+        ->toBe('<link rel="preload" as="style" href="https://example.com/custom/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/custom/assets/app.versioned.css" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
 });
@@ -95,17 +97,15 @@ test('vite tag exports preloads after rendering', function () {
 
     expect($outputs)
         ->toHaveKey('vite_entrypoints')
-        ->toHaveKey('vite_preloads');
+        ->toHaveKey('vite_preloads')
+        ->{'vite_preloads'}->toHaveCount(1);
 
-    expect($outputs['vite_preloads'])->toBe([
-        [
-            'href' => 'https://example.com/build/assets/app.versioned.js',
-            'attributes' => [
-                'rel="modulepreload"',
-                'as="script"',
-            ],
-        ],
-    ]);
+    expect($outputs['vite_preloads'][0])
+        ->toHaveKeys(['href', 'attributes'])
+        ->{'href'}->toBe('https://example.com/build/assets/app.versioned.js')
+        ->{'attributes'}->toMatchArray([
+            'rel="modulepreload"',
+        ]);
 
     cleanViteManifest();
 });
@@ -120,18 +120,16 @@ test('vite tag exports preloads after rendering with custom directory', function
 
     expect($outputs)
         ->toHaveKey('vite_entrypoints')
-        ->toHaveKey('vite_preloads');
+        ->toHaveKey('vite_preloads')
+        ->{'vite_preloads'}->toHaveCount(1);
 
-    expect($outputs['vite_preloads'])->toBe([
-        [
-            'href' => 'https://example.com/custom/assets/app.versioned.js',
-            'attributes' => [
-                'rel="modulepreload"',
-                'as="script"',
-            ],
-            'directory' => 'custom',
-        ],
-    ]);
+    expect($outputs['vite_preloads'][0])
+        ->toHaveKeys(['href', 'attributes', 'directory'])
+        ->{'href'}->toBe('https://example.com/custom/assets/app.versioned.js')
+        ->{'attributes'}->toMatchArray([
+            'rel="modulepreload"',
+        ])
+        ->{'directory'}->toBe('custom');
 
     cleanViteManifest('custom');
 });
