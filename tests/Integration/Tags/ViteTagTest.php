@@ -15,7 +15,7 @@ test('vite tag with single js entrypoint', function () {
     $template = $this->environment->parseString('{% vite "resources/js/app.js" %}');
 
     expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
+        ->toBe('<link rel="modulepreload" as="script" href="https://example.com/build/assets/app.versioned.js" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single css entrypoint', function () {
@@ -29,7 +29,7 @@ test('vite tag with single multiple entrypoints', function () {
     $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js" %}');
 
     expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/build/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
+        ->toBe('<link rel="preload" as="style" href="https://example.com/build/assets/app.versioned.css" /><link rel="modulepreload" as="script" href="https://example.com/build/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/build/assets/app.versioned.css" /><script type="module" src="https://example.com/build/assets/app.versioned.js"></script>');
 });
 
 test('vite tag with single entrypoint and custom directory', function () {
@@ -38,7 +38,7 @@ test('vite tag with single entrypoint and custom directory', function () {
     $template = $this->environment->parseString('{% vite "resources/js/app.js", directory: "custom" %}');
 
     expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
+        ->toBe('<link rel="modulepreload" as="script" href="https://example.com/custom/assets/app.versioned.js" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
 });
@@ -49,7 +49,7 @@ test('vite tag with multiple entrypoints and custom directory', function () {
     $template = $this->environment->parseString('{% vite "resources/css/app.css", "resources/js/app.js", directory: "custom" %}');
 
     expect($template->render($this->environment->newRenderContext()))
-        ->toBe('<link rel="preload" as="style" href="https://example.com/custom/assets/app.versioned.css" /><link rel="modulepreload" href="https://example.com/custom/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/custom/assets/app.versioned.css" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
+        ->toBe('<link rel="preload" as="style" href="https://example.com/custom/assets/app.versioned.css" /><link rel="modulepreload" as="script" href="https://example.com/custom/assets/app.versioned.js" /><link rel="stylesheet" href="https://example.com/custom/assets/app.versioned.css" /><script type="module" src="https://example.com/custom/assets/app.versioned.js"></script>');
 
     cleanViteManifest('custom');
 });
@@ -102,6 +102,7 @@ test('vite tag exports preloads after rendering', function () {
             'href' => 'https://example.com/build/assets/app.versioned.js',
             'attributes' => [
                 'rel="modulepreload"',
+                'as="script"',
             ],
         ],
     ]);
@@ -126,6 +127,7 @@ test('vite tag exports preloads after rendering with custom directory', function
             'href' => 'https://example.com/custom/assets/app.versioned.js',
             'attributes' => [
                 'rel="modulepreload"',
+                'as="script"',
             ],
             'directory' => 'custom',
         ],

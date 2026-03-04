@@ -1,21 +1,25 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#2 \\$replace of function trans expects array\\<string, bool\\|float\\|int\\|string\\>, array\\<int\\|string, mixed\\> given\\.$#"
+			message: '#^Parameter \#2 \$replace of function trans expects array\<string, bool\|float\|int\|string\|null\>, array\<int\|string, mixed\> given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Filters/TranslatorFilters.php
 
 		-
-			message: "#^Cannot access offset 'files' on Illuminate\\\\Contracts\\\\Foundation\\\\Application\\.$#"
+			message: '#^Cannot access offset ''files'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: src/LiquidServiceProvider.php
 
 		-
-			message: "#^Cannot access offset 'liquid\\.compiler' on Illuminate\\\\Contracts\\\\Foundation\\\\Application\\.$#"
+			message: '#^Cannot access offset ''liquid\.compiler'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: src/LiquidServiceProvider.php
 
 		-
-			message: "#^Parameter \\$cachePath of class Keepsuit\\\\LaravelLiquid\\\\LiquidCompiler constructor expects string, mixed given\\.$#"
+			message: '#^Parameter \$cachePath of class Keepsuit\\LaravelLiquid\\LiquidCompiler constructor expects string, mixed given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/LiquidServiceProvider.php
