@@ -2,6 +2,7 @@
 
 namespace Keepsuit\LaravelLiquid\Filters;
 
+use Keepsuit\Liquid\Contracts\IsContextAware;
 use Keepsuit\Liquid\Contracts\MapsToLiquid;
 use Keepsuit\Liquid\Drop;
 use Keepsuit\Liquid\Filters\FiltersProvider;
@@ -29,6 +30,10 @@ class DebugFilters extends FiltersProvider
 
     protected function mapValue(mixed $value): mixed
     {
+        if ($value instanceof IsContextAware) {
+            $value->setContext($this->context);
+        }
+
         if ($value instanceof Drop) {
             return $this->mapValue($value->toArray());
         }
