@@ -43,7 +43,7 @@ class LiquidServiceProvider extends PackageServiceProvider
                 ->setStrictFilters(config()->boolean('liquid.strict_filters', false));
 
             Collection::make(config()->array('liquid.extensions', [LaravelLiquidExtension::class]))
-                ->filter(fn (mixed $extensionClass) => is_string($extensionClass) && class_exists($extensionClass))
+                ->filter(fn (mixed $extensionClass) => is_string($extensionClass) && class_exists($extensionClass) && is_subclass_of($extensionClass, Extension::class))
                 ->map(fn (string $extensionClass): Extension => $app->make($extensionClass))
                 ->each(fn (Extension $extension) => $environment->addExtension($extension));
 
