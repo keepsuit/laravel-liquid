@@ -38,7 +38,9 @@ class LiquidServiceProvider extends PackageServiceProvider
             $environment = EnvironmentFactory::new()
                 ->setFilesystem($filesystem)
                 ->setTemplatesCache($templatesCache)
-                ->setRethrowErrors($app->hasDebugModeEnabled());
+                ->setRethrowErrors($app->hasDebugModeEnabled())
+                ->setStrictVariables(config()->boolean('liquid.strict_variables', false))
+                ->setStrictFilters(config()->boolean('liquid.strict_filters', false));
 
             Collection::make(config()->array('liquid.extensions', [LaravelLiquidExtension::class]))
                 ->filter(fn (mixed $extensionClass) => is_string($extensionClass) && class_exists($extensionClass))
