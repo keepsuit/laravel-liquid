@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.6.0 - 2026-03-05
+
+### What's Changed
+
+* drop php 8.1 and laravel 10, add php 8.5 and laravel 13 by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/36
+* feat: configure liquid by @cappuc in https://github.com/keepsuit/laravel-liquid/pull/37
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.5.5...v0.6.0
+
 ## v0.5.5 - 2026-03-04
 
 ### What's Changed
