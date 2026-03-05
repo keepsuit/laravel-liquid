@@ -4,12 +4,14 @@ namespace Keepsuit\LaravelLiquid;
 
 use Clockwork\Clockwork;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Collection;
 use Illuminate\View\Factory;
 use Keepsuit\LaravelLiquid\Support\Clockwork\LiquidDataSource;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\EnvironmentFactory;
+use Keepsuit\Liquid\Extensions\Extension;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -18,7 +20,8 @@ class LiquidServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('laravel-liquid');
+            ->name('laravel-liquid')
+            ->hasConfigFile();
     }
 
     public function packageRegistered(): void
@@ -32,11 +35,17 @@ class LiquidServiceProvider extends PackageServiceProvider
                 compiler: $app->make('liquid.compiler')
             );
 
-            return EnvironmentFactory::new()
+            $environment = EnvironmentFactory::new()
                 ->setFilesystem($filesystem)
                 ->setTemplatesCache($templatesCache)
-                ->setRethrowErrors($app->hasDebugModeEnabled())
-                ->addExtension(new LaravelLiquidExtension);
+                ->setRethrowErrors($app->hasDebugModeEnabled());
+
+            Collection::make(config()->array('liquid.extensions', [LaravelLiquidExtension::class]))
+                ->filter(fn (mixed $extensionClass) => is_string($extensionClass) && class_exists($extensionClass))
+                ->map(fn (string $extensionClass): Extension => $app->make($extensionClass))
+                ->each(fn (Extension $extension) => $environment->addExtension($extension));
+
+            return $environment;
         });
 
         $this->app->singleton('liquid.environment', function (Application $app): Environment {
