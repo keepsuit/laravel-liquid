@@ -11,14 +11,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.1, 8.2, 8.3, 8.4]
-        laravel: [^10.0, ^11.0, ^12.0]
+        php: [8.2, 8.3, 8.4, 8.5]
+        laravel: [^11.0, ^12.0, ^13.0]
         stability: [prefer-lowest, prefer-stable]
         exclude:
-          - php: 8.1
+          - php: 8.5
             laravel: ^11.0
-          - php: 8.1
-            laravel: ^12.0
+          - php: 8.2
+            laravel: ^13.0
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
 
@@ -42,7 +42,7 @@ jobs:
         run: |
           composer remove --dev larastan/larastan --no-interaction --no-update
           composer require "illuminate/contracts:${{ matrix.laravel }}" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-security-blocking
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
         run: composer show -D
