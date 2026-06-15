@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.6.1 - 2026-06-15
+
+### What's Changed
+
+* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/38
+* Bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/39
+* Bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/40
+* Added support for keepsuit/liquid 0.10
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.6.0...v0.6.1
+
 ## v0.6.0 - 2026-03-05
 
 ### What's Changed
