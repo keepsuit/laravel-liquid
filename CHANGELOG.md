@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.6.2 - 2026-07-23
+
+### What's Changed
+
+* Bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/keepsuit/laravel-liquid/pull/41
+* Added support for `keepsuit/liquid` v0.11
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.6.1...v0.6.2
+
 ## v0.6.1 - 2026-06-15
 
 ### What's Changed
