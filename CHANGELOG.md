@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## v0.6.3 - 2026-08-31
+
+### What's changed
+
+* Added support for `keepsuit/liquid` v0.12
+
+**Full Changelog**: https://github.com/keepsuit/laravel-liquid/compare/v0.6.2...v0.6.3
+
 ## v0.6.2 - 2026-07-23
 
 ### What's Changed
