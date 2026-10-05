@@ -36,7 +36,7 @@ test('views may be recompiled and rerendered', function () {
     $path = __DIR__.'/fixtures/foo.liquid';
     $compiledPath = __DIR__.'/'.hash('xxh128', 'v2'.$path).'.php';
 
-    $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['fixtures.foo' => $path]);
+    $this->viewFinder->shouldReceive('getViews')->andReturn(['fixtures.foo' => $path]);
     $this->viewFinder->shouldReceive('find')->with('fixtures.foo')->andReturn($path);
 
     $this->files->shouldReceive('exists')->with($compiledPath)->andReturn(true);

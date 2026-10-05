@@ -17,6 +17,45 @@ afterEach(function () {
     app('files')->deleteDirectory($this->directory);
 });
 
+it('shares loaded compiled templates between views and the facade until forgotten', function () {
+    $files = mock(\Illuminate\Filesystem\Filesystem::class)->makePartial();
+    app()->instance('files', $files);
+    $sourcePath = $this->directory.'/views/main.liquid';
+    $files->put($sourcePath, 'Hello {{ name }}');
+    touch($sourcePath, time() - 10);
+    $compiler = app('liquid.compiler');
+    $compiledPath = $compiler->getCompiledPath($sourcePath);
+    $files->shouldReceive('get')->twice()->with($compiledPath.'.state')->passthru();
+
+    $template = Liquid::parse('main');
+    expect($template)->toBeInstanceOf(CompiledTemplate::class);
+    expect(view('main', ['name' => 'view'])->render())->toBe('Hello view');
+    expect(Liquid::render('main', ['name' => 'facade'])->toHtml())->toBe('Hello facade');
+    expect(Liquid::parse('main'))->toBe($template);
+
+    app('view.engine.resolver')->resolve('liquid')->forgetCompiled();
+
+    expect(file_exists($compiledPath))->toBeTrue();
+    expect(Liquid::parse('main'))->not->toBe($template)->toBeInstanceOf(CompiledTemplate::class);
+    expect(view('main', ['name' => 'again'])->render())->toBe('Hello again');
+});
+
+it('refreshes shared templates when sources change with or without view caching', function (bool $cacheViews) {
+    config()->set('view.cache', $cacheViews);
+    $sourcePath = $this->directory.'/views/main.liquid';
+    app('files')->put($sourcePath, 'Hello {{ name }}');
+    touch($sourcePath, time() - 10);
+
+    expect(Liquid::parse('main'))->toBeInstanceOf(CompiledTemplate::class);
+    expect(view('main', ['name' => 'world'])->render())->toBe('Hello world');
+
+    app('files')->put($sourcePath, 'Updated {{ name }}');
+    clearstatcache();
+
+    expect(view('main', ['name' => 'view'])->render())->toBe('Updated view');
+    expect(Liquid::render('main', ['name' => 'facade'])->toHtml())->toBe('Updated facade');
+})->with([true, false]);
+
 it('loads native views and partials from disk and recompiles changed partials', function () {
     $files = app('files');
     $files->put($this->directory.'/views/main.liquid', "{% render 'partial', name: name %}");

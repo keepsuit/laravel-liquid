@@ -42,6 +42,34 @@ class LaravelTemplatesCache extends MemoryTemplatesCache
         unset($this->cache[$name]);
     }
 
+    public function load(string $name): Template
+    {
+        $template = $this->get($name);
+
+        if ($template === null) {
+            $path = $this->compiler->getPathFromTemplateName($name);
+            $this->compiler->compile($path);
+            $template = $this->compiler->resolveCompiledTemplateByPath($path);
+
+            if ($template === null) {
+                throw new \RuntimeException('Unable to load compiled Liquid template: '.$name);
+            }
+
+            parent::set($name, $template);
+        }
+
+        foreach ($template->getState()->partials as $partial) {
+            $this->load($partial);
+        }
+
+        return $template;
+    }
+
+    public function forgetLoaded(): void
+    {
+        parent::clear();
+    }
+
     public function has(string $name): bool
     {
         return $this->get($name) !== null;

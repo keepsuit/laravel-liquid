@@ -37,6 +37,7 @@ Views and partials are compiled to PHP using Liquid 0.13's compiler. Artifacts u
 Laravel's configured `view.compiled` directory and respect `view.cache`.
 Laravel tags, filters, and parse-time outputs remain available. Partial and output
 metadata is cached alongside each PHP artifact.
+Views and the Liquid facade share loaded compiled templates within a request.
 
 ## Tags
 

@@ -3,6 +3,7 @@
 namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Support\HtmlString;
+use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Template;
 
@@ -14,6 +15,10 @@ class Liquid
 
     public function parse(string $view): Template
     {
+        if ($this->environment->templatesCache instanceof LaravelTemplatesCache) {
+            return $this->environment->templatesCache->load($view);
+        }
+
         return $this->environment->parseTemplate($view);
     }
 

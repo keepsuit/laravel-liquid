@@ -11,6 +11,7 @@ use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
+use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Compiler\CompiledTemplate;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Exceptions\InternalException;
@@ -78,21 +79,14 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function render(string $path, array $data): string
     {
-        $template = $this->resolveCompiledTemplateByPath($path);
-
-        if ($template === null) {
-            $this->compile($path);
-            $template = $this->resolveCompiledTemplateByPath($path);
-        }
-
-        if (! $template instanceof Template) {
-            throw new \Exception('Template is not an instance of Template');
-        }
-
-        $this->ensureTemplatePartialsAreCompiled($template);
-
         try {
-            $context = $this->getEnvironment()->newRenderContext(
+            $environment = $this->getEnvironment();
+            $name = $this->getTemplateNameFromPath($path);
+            $template = $environment->templatesCache instanceof LaravelTemplatesCache
+                ? $environment->templatesCache->load($name)
+                : $environment->parseTemplate($name);
+
+            $context = $environment->newRenderContext(
                 data: $data,
             );
 
@@ -193,13 +187,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         );
     }
 
-    protected function ensureTemplatePartialsAreCompiled(Template $template): void
+    public function forgetCompiled(): void
     {
-        foreach ($template->getState()->partials as $partial) {
-            $path = $this->getPathFromTemplateName($partial);
-            if ($this->isExpired($path)) {
-                $this->compile($path);
-            }
+        $cache = $this->getEnvironment()->templatesCache;
+
+        if ($cache instanceof LaravelTemplatesCache) {
+            $cache->forgetLoaded();
         }
     }
 }
