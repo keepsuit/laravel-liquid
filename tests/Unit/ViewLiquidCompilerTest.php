@@ -3,11 +3,10 @@
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
-use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
-use Symfony\Component\VarExporter\VarExporter;
+use Keepsuit\Liquid\Compiler\CompiledTemplate;
 
 beforeEach(function () {
     $this->viewFinder = mock(FileViewFinder::class);
@@ -26,6 +25,10 @@ beforeEach(function () {
         ->setTemplatesCache(new LaravelTemplatesCache($this->compiler))
         ->setFilesystem(new LaravelLiquidFileSystem($this->compiler))
         ->build());
+});
+
+afterEach(function () {
+    $this->files->deleteDirectory($this->cacheDir);
 });
 
 test('isExpired returns true if compiled file doesnt exist', function () {
@@ -50,37 +53,24 @@ test('isExpired return false when cache is true and no file modification', funct
     expect($this->compiler->isExpired('foo'))->toBeFalse();
 });
 
-test('compiles file and returns content', function () {
-    $template = Liquid::environment()->parseString('Hello World', 'foo');
-    $compiledPath = $this->cacheDir.'/'.hash('xxh128', 'v2foo.liquid').'.php';
+test('compiles PHP artifacts with existing or missing cache directories', function (bool $existingDirectory) {
+    if ($existingDirectory) {
+        $this->files->makeDirectory($this->cacheDir, 0755, true);
+    }
 
+    $compiledPath = $this->compiler->getCompiledPath('foo.liquid');
     $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['foo' => 'foo.liquid']);
     $this->viewFinder->shouldReceive('find')->with('foo')->andReturn('foo.liquid');
-
-    $this->files->shouldReceive('exists')->once()->with($compiledPath)->andReturn(null);
-    $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
-
-    $this->files->shouldReceive('exists')->once()->with($this->cacheDir)->andReturn(true);
-    $this->files->shouldReceive('put')->once()->with($compiledPath, '<?php return '.VarExporter::export($template).';');
+    $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello {{ name }}');
 
     $this->compiler->compile('foo.liquid');
-});
 
-test('compiles file and returns content creating directory', function () {
-    $template = Liquid::environment()->parseString('Hello World', 'foo');
-    $compiledPath = $this->cacheDir.'/'.hash('xxh128', 'v2foo.liquid').'.php';
-
-    $this->viewFinder->shouldReceive('getViews')->once()->andReturn(['foo' => 'foo.liquid']);
-    $this->viewFinder->shouldReceive('find')->with('foo')->andReturn('foo.liquid');
-
-    $this->files->shouldReceive('exists')->once()->with($compiledPath)->andReturn(null);
-    $this->files->shouldReceive('get')->once()->with('foo.liquid')->andReturn('Hello World');
-    $this->files->shouldReceive('exists')->once()->with($this->cacheDir)->andReturn(false);
-    $this->files->shouldReceive('makeDirectory')->once()->with($this->cacheDir, 0777, true, true);
-    $this->files->shouldReceive('put')->once()->with($compiledPath, '<?php return '.VarExporter::export($template).';');
-
-    $this->compiler->compile('foo.liquid');
-});
+    $template = require $compiledPath;
+    expect($template)->toBeInstanceOf(CompiledTemplate::class);
+    expect($template->render(app('liquid.environment')->newRenderContext(data: ['name' => 'World'])))
+        ->toBe('Hello World');
+    expect(file_exists($compiledPath.'.state'))->toBeTrue();
+})->with([true, false]);
 
 test('isExpired return false when use cache is false', function () {
     $compiler = new LiquidCompiler(

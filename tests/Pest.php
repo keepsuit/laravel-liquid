@@ -13,6 +13,25 @@ function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
         ->build();
 }
 
+function parseLiquidString(\Keepsuit\Liquid\Environment $environment, string $source): \Keepsuit\Liquid\Template
+{
+    $template = $environment->parseString($source);
+
+    $path = sys_get_temp_dir().'/laravel-liquid-test-'.bin2hex(random_bytes(8)).'.php';
+
+    try {
+        $environment->compile($template, $path);
+        $compiled = require $path;
+        $class = $compiled::class;
+
+        return new $class($template->getState());
+    } finally {
+        if (is_file($path)) {
+            unlink($path);
+        }
+    }
+}
+
 function setEnv(string $env): void
 {
     app()->bind('env', fn () => $env);

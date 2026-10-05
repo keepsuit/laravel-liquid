@@ -37,9 +37,9 @@ class LaravelTemplatesCache extends MemoryTemplatesCache
 
     public function set(string $name, Template $template): void
     {
-        parent::set($name, $template);
-
         $this->compiler->saveCompiledTemplate($template);
+
+        unset($this->cache[$name]);
     }
 
     public function has(string $name): bool

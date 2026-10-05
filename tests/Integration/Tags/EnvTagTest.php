@@ -5,7 +5,7 @@ beforeEach(function () {
 });
 
 it('env tag', function () {
-    $template = $this->environment->parseString('{% env "production" %}prod{% endenv %}');
+    $template = parseLiquidString($this->environment, '{% env "production" %}prod{% endenv %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
@@ -14,7 +14,7 @@ it('env tag', function () {
 });
 
 it('env tag multiple', function () {
-    $template = $this->environment->parseString('{% env "production", "staging" %}staging or production{% endenv %}');
+    $template = parseLiquidString($this->environment, '{% env "production", "staging" %}staging or production{% endenv %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
@@ -26,7 +26,7 @@ it('env tag multiple', function () {
 });
 
 it('env tag else ', function () {
-    $template = $this->environment->parseString('{% env "production" %}prod{% else %}dev{% endenv %}');
+    $template = parseLiquidString($this->environment, '{% env "production" %}prod{% else %}dev{% endenv %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('dev');
 

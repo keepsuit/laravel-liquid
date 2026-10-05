@@ -7,7 +7,7 @@ beforeEach(function () {
 });
 
 it('auth tag', function () {
-    $template = $this->environment->parseString('{% auth %}authenticated{% endauth %}');
+    $template = parseLiquidString($this->environment, '{% auth %}authenticated{% endauth %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
@@ -18,7 +18,7 @@ it('auth tag', function () {
 it('auth tag with custom guard', function () {
     config()->set('auth.guards.admin', ['driver' => 'session', 'provider' => 'users']);
 
-    $template = $this->environment->parseString('{% auth "admin" %}authenticated{% endauth %}');
+    $template = parseLiquidString($this->environment, '{% auth "admin" %}authenticated{% endauth %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
@@ -30,7 +30,7 @@ it('auth tag with custom guard', function () {
 });
 
 it('auth tag else', function () {
-    $template = $this->environment->parseString('{% auth %}authenticated{% else %}guest{% endauth %}');
+    $template = parseLiquidString($this->environment, '{% auth %}authenticated{% else %}guest{% endauth %}');
 
     expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 

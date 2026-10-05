@@ -31,6 +31,13 @@ class HomeController extends Controller
 }
 ```
 
+## PHP compilation
+
+Views and partials are compiled to PHP using Liquid 0.13's compiler. Artifacts use
+Laravel's configured `view.compiled` directory and respect `view.cache`.
+Laravel tags, filters, and parse-time outputs remain available. Partial and output
+metadata is cached alongside each PHP artifact.
+
 ## Tags
 
 This package provides some custom tags in addition to the standard Liquid tags.
@@ -165,6 +172,8 @@ Generate urls using the laravel url helpers.
 ```
 
 ## Testing
+
+Run the suite with compiled templates:
 
 ```bash
 composer test
