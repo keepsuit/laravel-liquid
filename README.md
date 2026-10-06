@@ -35,8 +35,7 @@ class HomeController extends Controller
 
 Views and partials are compiled to PHP using Liquid 0.13's compiler. Artifacts use
 Laravel's configured `view.compiled` directory and respect `view.cache`.
-Laravel tags, filters, and parse-time outputs remain available. Partial and output
-metadata is cached alongside each PHP artifact.
+Laravel tags, filters, and parse-time outputs remain available.
 Views and the Liquid facade share loaded compiled templates within a request.
 
 ## Tags

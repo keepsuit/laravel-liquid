@@ -25,7 +25,6 @@ it('shares loaded compiled templates between views and the facade until forgotte
     touch($sourcePath, time() - 10);
     $compiler = app('liquid.compiler');
     $compiledPath = $compiler->getCompiledPath($sourcePath);
-    $files->shouldReceive('get')->twice()->with($compiledPath.'.state')->passthru();
 
     $template = Liquid::parse('main');
     expect($template)->toBeInstanceOf(CompiledTemplate::class);
@@ -109,35 +108,16 @@ it('retains parse outputs and renders custom tags and filters after disk reload'
     }
 });
 
-it('recovers corrupt artifacts and removes artifacts with metadata', function () {
+it('recovers corrupt artifacts and removes them', function () {
     app('files')->put($this->directory.'/views/main.liquid', 'Hello');
     expect(view('main')->render())->toBe('Hello');
     $compiler = app('liquid.compiler');
     $path = $compiler->getCompiledPath($this->directory.'/views/main.liquid');
     app('files')->put($path, '<?php return null;');
     expect(view('main')->render())->toBe('Hello');
-    $compiler->removeCompiledTemplate('main');
+    Liquid::environment()->templatesCache->remove('main');
     expect(file_exists($path))->toBeFalse();
-    expect(file_exists($path.'.state'))->toBeFalse();
 });
-
-it('recompiles views when metadata is missing or corrupt', function (bool $missing) {
-    app('files')->put($this->directory.'/views/main.liquid', 'Hello');
-    expect(view('main')->render())->toBe('Hello');
-    $compiler = app('liquid.compiler');
-    $sourcePath = $compiler->getPathFromTemplateName('main');
-    $path = $compiler->getCompiledPath($sourcePath);
-
-    if ($missing) {
-        app('files')->delete($path.'.state');
-    } else {
-        app('files')->put($path.'.state', 'invalid metadata');
-    }
-
-    expect($compiler->resolveCompiledTemplateByPath($sourcePath))->toBeNull();
-    expect(view('main')->render())->toBe('Hello');
-    expect($compiler->resolveCompiledTemplateByPath($sourcePath))->toBeInstanceOf(CompiledTemplate::class);
-})->with([true, false]);
 
 it('maps compilation and rendering errors to Laravel view exceptions', function (string $source) {
     config()->set('liquid.strict_variables', true);
@@ -167,7 +147,7 @@ it('replaces legacy exported templates with native artifacts', function () {
     app('files')->put($path, '<?php return new \Keepsuit\Liquid\ParsedTemplate(new \Keepsuit\Liquid\Nodes\Document(new \Keepsuit\Liquid\Nodes\BodyNode));');
 
     expect(require $path)->toBeInstanceOf(\Keepsuit\Liquid\ParsedTemplate::class);
-    expect($compiler->resolveCompiledTemplateByPath($sourcePath))->toBeNull();
+    expect(Liquid::environment()->templatesCache->get('main'))->toBeNull();
     expect(view('main')->render())->toBe('Hello');
     expect(require $path)->toBeInstanceOf(CompiledTemplate::class);
 });

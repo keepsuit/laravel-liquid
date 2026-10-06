@@ -69,7 +69,6 @@ test('compiles PHP artifacts with existing or missing cache directories', functi
     expect($template)->toBeInstanceOf(CompiledTemplate::class);
     expect($template->render(app('liquid.environment')->newRenderContext(data: ['name' => 'World'])))
         ->toBe('Hello World');
-    expect(file_exists($compiledPath.'.state'))->toBeTrue();
 })->with([true, false]);
 
 test('isExpired return false when use cache is false', function () {

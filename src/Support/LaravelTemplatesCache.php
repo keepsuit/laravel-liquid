@@ -4,42 +4,25 @@ namespace Keepsuit\LaravelLiquid\Support;
 
 use Keepsuit\LaravelLiquid\LiquidCompiler;
 use Keepsuit\Liquid\Template;
-use Keepsuit\Liquid\TemplatesCache\MemoryTemplatesCache;
+use Keepsuit\Liquid\TemplatesCache\CompiledTemplatesCache;
 
-class LaravelTemplatesCache extends MemoryTemplatesCache
+class LaravelTemplatesCache extends CompiledTemplatesCache
 {
     public function __construct(
         protected LiquidCompiler $compiler,
-    ) {}
+    ) {
+        parent::__construct($compiler->getCachePath());
+    }
 
     public function get(string $name): ?Template
     {
-        $path = $this->compiler->getPathFromTemplateName($name);
-
-        if ($this->compiler->isExpired($path)) {
+        if ($this->compiler->isExpired($this->compiler->getPathFromTemplateName($name))) {
             unset($this->cache[$name]);
 
             return null;
         }
 
-        if ($template = parent::get($name)) {
-            return $template;
-        }
-
-        $template = $this->compiler->resolveCompiledTemplateByPath($path);
-
-        if ($template !== null) {
-            parent::set($name, $template);
-        }
-
-        return $template;
-    }
-
-    public function set(string $name, Template $template): void
-    {
-        $this->compiler->saveCompiledTemplate($template);
-
-        unset($this->cache[$name]);
+        return parent::get($name);
     }
 
     public function load(string $name): Template
@@ -47,15 +30,12 @@ class LaravelTemplatesCache extends MemoryTemplatesCache
         $template = $this->get($name);
 
         if ($template === null) {
-            $path = $this->compiler->getPathFromTemplateName($name);
-            $this->compiler->compile($path);
-            $template = $this->compiler->resolveCompiledTemplateByPath($path);
+            $this->compiler->compile($this->compiler->getPathFromTemplateName($name));
+            $template = parent::get($name);
 
             if ($template === null) {
                 throw new \RuntimeException('Unable to load compiled Liquid template: '.$name);
             }
-
-            parent::set($name, $template);
         }
 
         foreach ($template->getState()->partials as $partial) {
@@ -67,25 +47,18 @@ class LaravelTemplatesCache extends MemoryTemplatesCache
 
     public function forgetLoaded(): void
     {
-        parent::clear();
-    }
-
-    public function has(string $name): bool
-    {
-        return $this->get($name) !== null;
+        $this->cache = [];
     }
 
     public function remove(string $name): void
     {
         unset($this->cache[$name]);
 
-        $this->compiler->removeCompiledTemplate($name);
+        $this->compiler->getFiles()->delete($this->getCompiledPath($name));
     }
 
-    public function clear(): void
+    protected function getCompiledPath(string $name): string
     {
-        parent::clear();
-
-        $this->compiler->clearCompiledTemplates();
+        return $this->compiler->getCompiledPath($this->compiler->getPathFromTemplateName($name));
     }
 }
