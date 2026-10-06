@@ -3,7 +3,6 @@
 namespace Keepsuit\LaravelLiquid;
 
 use Illuminate\Support\HtmlString;
-use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Template;
 
@@ -15,11 +14,9 @@ class Liquid
 
     public function parse(string $view): Template
     {
-        if ($this->environment->templatesCache instanceof LaravelTemplatesCache) {
-            return $this->environment->templatesCache->load($view);
-        }
+        $template = $this->environment->parseTemplate($view);
 
-        return $this->environment->parseTemplate($view);
+        return $this->environment->templatesCache->get($view) ?? $template;
     }
 
     public function render(string $view, array $data = []): HtmlString
@@ -28,6 +25,15 @@ class Liquid
             ->render($this->environment->newRenderContext(data: $data));
 
         return new HtmlString($content);
+    }
+
+    /**
+     * @return \Generator<string>
+     */
+    public function stream(string $view, array $data = []): \Generator
+    {
+        yield from $this->parse($view)
+            ->stream($this->environment->newRenderContext(data: $data));
     }
 
     public function environment(): Environment

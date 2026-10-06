@@ -41,17 +41,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function render(string $path, array $data): string
     {
         try {
-            $environment = $this->getEnvironment();
-            $name = $this->getTemplateNameFromPath($path);
-            $template = $environment->templatesCache instanceof LaravelTemplatesCache
-                ? $environment->templatesCache->load($name)
-                : $environment->parseTemplate($name);
+            $liquid = Container::getInstance()->make(Liquid::class);
 
-            $context = $environment->newRenderContext(
-                data: $data,
-            );
-
-            return $template->render($context);
+            return $liquid->parse($this->getTemplateNameFromPath($path))
+                ->render($liquid->environment()->newRenderContext(data: $data));
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }

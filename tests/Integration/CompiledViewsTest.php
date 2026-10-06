@@ -2,6 +2,7 @@
 
 use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\Liquid\Compiler\CompiledTemplate;
+use Keepsuit\Liquid\ParsedTemplate;
 
 beforeEach(function () {
     $this->directory = realpath(sys_get_temp_dir()).'/laravel-liquid-'.bin2hex(random_bytes(8));
@@ -45,7 +46,7 @@ it('refreshes shared templates when sources change with or without view caching'
     app('files')->put($sourcePath, 'Hello {{ name }}');
     touch($sourcePath, time() - 10);
 
-    expect(Liquid::parse('main'))->toBeInstanceOf(CompiledTemplate::class);
+    expect(Liquid::parse('main'))->toBeInstanceOf($cacheViews ? CompiledTemplate::class : ParsedTemplate::class);
     expect(view('main', ['name' => 'world'])->render())->toBe('Hello world');
 
     app('files')->put($sourcePath, 'Updated {{ name }}');
@@ -168,4 +169,10 @@ it('compiles all liquid views with the liquid:cache command', function () {
 
 it('runs liquid:cache on optimize', function () {
     expect(\Illuminate\Support\ServiceProvider::$optimizeCommands)->toContain('liquid:cache');
+});
+
+it('streams a view', function () {
+    app('files')->put($this->directory.'/views/main.liquid', 'Hello {{ name }}');
+
+    expect(implode('', iterator_to_array(Liquid::stream('main', ['name' => 'world']), false)))->toBe('Hello world');
 });

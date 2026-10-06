@@ -25,26 +25,6 @@ class LaravelTemplatesCache extends CompiledTemplatesCache
         return parent::get($name);
     }
 
-    public function load(string $name): Template
-    {
-        $template = $this->get($name);
-
-        if ($template === null) {
-            $this->compiler->compile($this->compiler->getPathFromTemplateName($name));
-            $template = parent::get($name);
-
-            if ($template === null) {
-                throw new \RuntimeException('Unable to load compiled Liquid template: '.$name);
-            }
-        }
-
-        foreach ($template->getState()->partials as $partial) {
-            $this->load($partial);
-        }
-
-        return $template;
-    }
-
     public function forgetLoaded(): void
     {
         $this->cache = [];
