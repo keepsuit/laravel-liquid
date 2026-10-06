@@ -26,6 +26,8 @@ class Liquid
     }
 
     /**
+     * Errors are thrown while iterating, after earlier chunks may already have been sent.
+     *
      * @return \Generator<string>
      */
     public function stream(string $view, array $data = []): \Generator

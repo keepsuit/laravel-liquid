@@ -43,7 +43,14 @@ class LiquidCacheCommand extends Command
             }
 
             foreach (Finder::create()->in($root)->exclude('vendor')->name($extensions)->files() as $file) {
-                $name = $prefix.str_replace(['/', '\\'], '.', Str::beforeLast($file->getRelativePathname(), '.'));
+                $relativeName = Str::beforeLast($file->getRelativePathname(), '.');
+
+                // Dots are directory separators in view names, so these files can't be resolved as views.
+                if (str_contains(basename($relativeName), '.')) {
+                    continue;
+                }
+
+                $name = $prefix.str_replace(['/', '\\'], '.', $relativeName);
 
                 $compiler->compile($finder->find($name));
                 $count++;

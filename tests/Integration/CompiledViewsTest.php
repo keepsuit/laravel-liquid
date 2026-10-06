@@ -175,6 +175,7 @@ it('compiles all liquid views with the liquid:cache command', function () {
     app('files')->makeDirectory($this->directory.'/views/partials', 0755, true);
     app('files')->put($this->directory.'/views/main.liquid', "{% render 'partials.item' %}");
     app('files')->put($this->directory.'/views/partials/item.liquid', 'Item');
+    app('files')->put($this->directory.'/views/legacy.v2.liquid', 'Skipped');
 
     $this->artisan('liquid:cache')->assertSuccessful();
 
