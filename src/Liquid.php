@@ -14,9 +14,7 @@ class Liquid
 
     public function parse(string $view): Template
     {
-        $template = $this->environment->parseTemplate($view);
-
-        return $this->environment->templatesCache->get($view) ?? $template;
+        return $this->environment->parseTemplate($view);
     }
 
     public function render(string $view, array $data = []): HtmlString
