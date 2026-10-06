@@ -2,6 +2,8 @@
 
 namespace Keepsuit\LaravelLiquid\Tags;
 
+use Keepsuit\Liquid\Compiler\CompilerContext;
+use Keepsuit\Liquid\Contracts\CanBeCompiled;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Nodes\BodyNode;
 use Keepsuit\Liquid\Parse\TagParseContext;
@@ -9,7 +11,7 @@ use Keepsuit\Liquid\Parse\TokenType;
 use Keepsuit\Liquid\Render\RenderContext;
 use Keepsuit\Liquid\TagBlock;
 
-class EnvTag extends TagBlock
+class EnvTag extends TagBlock implements CanBeCompiled
 {
     /**
      * @var string[]
@@ -66,5 +68,18 @@ class EnvTag extends TagBlock
         }
 
         return $this->elseBody?->render($context) ?? '';
+    }
+
+    public function compile(CompilerContext $context): void
+    {
+        $context->write('if (app()->environment('.$context->writeValue($this->environments).')) {')->indent();
+        $context->compileBody($this->body);
+        $context->outdent()->write('}');
+
+        if ($this->elseBody !== null) {
+            $context->write('else {')->indent();
+            $context->compileBody($this->elseBody);
+            $context->outdent()->write('}');
+        }
     }
 }

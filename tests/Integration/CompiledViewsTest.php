@@ -18,6 +18,26 @@ afterEach(function () {
     app('files')->deleteDirectory($this->directory);
 });
 
+it('compiles auth guest and env bodies without serialized fallback nodes', function () {
+    $sourcePath = $this->directory.'/views/main.liquid';
+    app('files')->put($sourcePath, <<<'LIQUID'
+    {% auth "admin" %}{% auth "admin" %}auth{% endauth %}{% else %}no-auth{% endauth %}|{% guest "admin" %}{% guest "admin" %}guest{% endguest %}{% else %}no-guest{% endguest %}|{% env "production", "staging" %}{% env "staging" %}env{% endenv %}{% else %}no-env{% endenv %}
+    LIQUID);
+    touch($sourcePath, time() - 10);
+    config()->set('auth.guards.admin', ['driver' => 'session', 'provider' => 'users']);
+
+    $template = Liquid::parse('main');
+    $compiledPath = app('liquid.compiler')->getCompiledPath($sourcePath);
+
+    expect($template)->toBeInstanceOf(CompiledTemplate::class);
+    expect(file_get_contents($compiledPath))->not->toContain('unserialize');
+    expect($template->render(Liquid::environment()->newRenderContext()))->toBe('no-auth|guest|no-env');
+
+    \Illuminate\Support\Facades\Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User);
+    setEnv('staging');
+    expect($template->render(Liquid::environment()->newRenderContext()))->toBe('auth|no-guest|env');
+});
+
 it('shares loaded compiled templates between views and the facade until forgotten', function () {
     $files = mock(\Illuminate\Filesystem\Filesystem::class)->makePartial();
     app()->instance('files', $files);

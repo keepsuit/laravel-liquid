@@ -1,10 +1,12 @@
 <?php
 
 use Keepsuit\LaravelLiquid\Tests\TestCase;
+use Keepsuit\Liquid\Environment;
+use Keepsuit\Liquid\Template;
 
 uses(TestCase::class)->in(__DIR__);
 
-function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
+function newLiquidEnvironment(): Environment
 {
     return app('liquid.factory')
         ->setRethrowErrors(true)
@@ -13,9 +15,13 @@ function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
         ->build();
 }
 
-function parseLiquidString(\Keepsuit\Liquid\Environment $environment, string $source): \Keepsuit\Liquid\Template
+function parseLiquidString(Environment $environment, string $source, string $mode = 'compiled'): Template
 {
     $template = $environment->parseString($source);
+
+    if ($mode === 'parsed') {
+        return $template;
+    }
 
     $path = sys_get_temp_dir().'/laravel-liquid-test-'.bin2hex(random_bytes(8)).'.php';
 
