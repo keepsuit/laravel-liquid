@@ -3,6 +3,7 @@
 namespace Keepsuit\LaravelLiquid;
 
 use Clockwork\Clockwork;
+use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\View\Factory;
@@ -78,12 +79,14 @@ class LiquidServiceProvider extends PackageServiceProvider
 
         $this->app->afterResolving('view', function (Factory $view) {
             $view->addExtension('liquid', 'liquid', function () {
+                $app = Application::getInstance();
+
                 $liquidEngine = new LiquidEngine(
-                    $this->app['liquid.compiler'],
-                    $this->app['files']
+                    $app->make('liquid.compiler'),
+                    $app->make('files')
                 );
 
-                $this->app->terminating(static function () use ($liquidEngine) {
+                $app->terminating(static function () use ($liquidEngine) {
                     $liquidEngine->forgetCompiled();
                 });
 
