@@ -23,19 +23,13 @@ function parseLiquidString(Environment $environment, string $source, string $mod
         return $template;
     }
 
-    $path = sys_get_temp_dir().'/laravel-liquid-test-'.bin2hex(random_bytes(8)).'.php';
+    $path = test()->temporaryDirectory()->path(bin2hex(random_bytes(8)).'.php');
 
-    try {
-        $environment->compile($template, $path);
-        $compiled = require $path;
-        $class = $compiled::class;
+    $environment->compile($template, $path);
+    $compiled = require $path;
+    $class = $compiled::class;
 
-        return new $class($template->getState());
-    } finally {
-        if (is_file($path)) {
-            unlink($path);
-        }
-    }
+    return new $class($template->getState());
 }
 
 function setEnv(string $env): void

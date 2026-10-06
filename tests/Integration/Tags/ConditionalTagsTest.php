@@ -6,7 +6,7 @@ use Keepsuit\Liquid\Compiler\CompiledTemplate;
 use Keepsuit\Liquid\ParsedTemplate;
 
 beforeEach(function () {
-    $this->directory = sys_get_temp_dir().'/laravel-liquid-tags-'.bin2hex(random_bytes(8));
+    $this->directory = $this->temporaryDirectory()->path();
     app('files')->makeDirectory($this->directory.'/views', 0755, true);
     app('files')->put($this->directory.'/views/item.liquid', '[{{ item }}]');
     config()->set('view.paths', [$this->directory.'/views']);
@@ -14,10 +14,6 @@ beforeEach(function () {
     config()->set('view.cache', true);
     app()->forgetInstance('view');
     $this->environment = newLiquidEnvironment();
-});
-
-afterEach(function () {
-    app('files')->deleteDirectory($this->directory);
 });
 
 dataset('conditional tags', [

@@ -15,20 +15,14 @@ beforeEach(function () {
     $this->files = mock(Filesystem::class)->makePartial();
     $this->compiler = new LiquidCompiler(
         files: $this->files,
-        cachePath: $this->cacheDir = __DIR__.'/../cache',
+        cachePath: $this->cacheDir = $this->temporaryDirectory()->path().'/cache',
     );
-
-    $this->files->deleteDirectory($this->cacheDir);
 
     $this->app->bind(\Illuminate\Contracts\View\Factory::class, fn () => $viewFactory);
     $this->app->bind('liquid.environment', fn () => $this->app->make('liquid.factory')
         ->setTemplatesCache(new LaravelTemplatesCache($this->compiler))
         ->setFilesystem(new LaravelLiquidFileSystem($this->compiler))
         ->build());
-});
-
-afterEach(function () {
-    $this->files->deleteDirectory($this->cacheDir);
 });
 
 test('isExpired returns true if compiled file doesnt exist', function () {
@@ -74,7 +68,7 @@ test('compiles PHP artifacts with existing or missing cache directories', functi
 test('isExpired return false when use cache is false', function () {
     $compiler = new LiquidCompiler(
         files: $this->files,
-        cachePath: __DIR__.'/../cache',
+        cachePath: $this->cacheDir,
         shouldCache: false,
     );
 

@@ -4,17 +4,13 @@ use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\Liquid\Compiler\CompiledTemplate;
 
 beforeEach(function () {
-    $this->directory = realpath(sys_get_temp_dir()).'/laravel-liquid-'.bin2hex(random_bytes(8));
+    $this->directory = $this->temporaryDirectory()->path();
     app('files')->makeDirectory($this->directory.'/views', 0755, true);
     config()->set('view.paths', [$this->directory.'/views']);
     config()->set('view.compiled', $this->directory.'/cache');
     config()->set('view.cache', true);
     config()->set('app.debug', true);
     app()->forgetInstance('view');
-});
-
-afterEach(function () {
-    app('files')->deleteDirectory($this->directory);
 });
 
 it('compiles auth guest and env bodies without serialized fallback nodes', function () {
