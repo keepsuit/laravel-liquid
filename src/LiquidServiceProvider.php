@@ -6,6 +6,7 @@ use Clockwork\Clockwork;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\View\Factory;
+use Keepsuit\LaravelLiquid\Commands\LiquidCacheCommand;
 use Keepsuit\LaravelLiquid\Support\Clockwork\LiquidDataSource;
 use Keepsuit\LaravelLiquid\Support\LaravelLiquidFileSystem;
 use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
@@ -21,7 +22,13 @@ class LiquidServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-liquid')
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasCommand(LiquidCacheCommand::class);
+    }
+
+    public function packageBooted(): void
+    {
+        $this->optimizes(optimize: 'liquid:cache', key: 'liquid');
     }
 
     public function packageRegistered(): void

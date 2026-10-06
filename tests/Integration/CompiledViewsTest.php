@@ -151,3 +151,21 @@ it('replaces legacy exported templates with native artifacts', function () {
     expect(view('main')->render())->toBe('Hello');
     expect(require $path)->toBeInstanceOf(CompiledTemplate::class);
 });
+
+it('compiles all liquid views with the liquid:cache command', function () {
+    app('files')->makeDirectory($this->directory.'/views/partials', 0755, true);
+    app('files')->put($this->directory.'/views/main.liquid', "{% render 'partials.item' %}");
+    app('files')->put($this->directory.'/views/partials/item.liquid', 'Item');
+
+    $this->artisan('liquid:cache')->assertSuccessful();
+
+    $compiler = app('liquid.compiler');
+    foreach (['main', 'partials.item'] as $name) {
+        expect(file_exists($compiler->getCompiledPath($compiler->getPathFromTemplateName($name))))->toBeTrue();
+    }
+    expect(view('main')->render())->toBe('Item');
+});
+
+it('runs liquid:cache on optimize', function () {
+    expect(\Illuminate\Support\ServiceProvider::$optimizeCommands)->toContain('liquid:cache');
+});
