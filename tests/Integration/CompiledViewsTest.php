@@ -2,7 +2,6 @@
 
 use Keepsuit\LaravelLiquid\Facades\Liquid;
 use Keepsuit\Liquid\Compiler\CompiledTemplate;
-use Keepsuit\Liquid\ParsedTemplate;
 
 beforeEach(function () {
     $this->directory = realpath(sys_get_temp_dir()).'/laravel-liquid-'.bin2hex(random_bytes(8));
@@ -66,11 +65,12 @@ it('refreshes shared templates when sources change with or without view caching'
     app('files')->put($sourcePath, 'Hello {{ name }}');
     touch($sourcePath, time() - 10);
 
-    expect(Liquid::parse('main'))->toBeInstanceOf($cacheViews ? CompiledTemplate::class : ParsedTemplate::class);
+    expect(Liquid::parse('main'))->toBeInstanceOf(CompiledTemplate::class);
     expect(view('main', ['name' => 'world'])->render())->toBe('Hello world');
 
     app('files')->put($sourcePath, 'Updated {{ name }}');
     clearstatcache();
+    app('view.engine.resolver')->resolve('liquid')->forgetCompiled();
 
     expect(view('main', ['name' => 'view'])->render())->toBe('Updated view');
     expect(Liquid::render('main', ['name' => 'facade'])->toHtml())->toBe('Updated facade');
@@ -98,9 +98,11 @@ it('loads native views and partials from disk and recompiles changed partials', 
     $files->put($this->directory.'/views/partial.liquid', 'Updated {{ name }}');
     touch($this->directory.'/views/partial.liquid', filemtime($partialPath) + 1);
     clearstatcache();
+    app('view.engine.resolver')->resolve('liquid')->forgetCompiled();
 
     expect(view('main', ['name' => 'world'])->render())->toBe('Updated world');
     $files->delete($partialPath);
+    app('view.engine.resolver')->resolve('liquid')->forgetCompiled();
     expect(view('main', ['name' => 'world'])->render())->toBe('Updated world');
 });
 
@@ -195,4 +197,25 @@ it('streams a view', function () {
     app('files')->put($this->directory.'/views/main.liquid', 'Hello {{ name }}');
 
     expect(implode('', iterator_to_array(Liquid::stream('main', ['name' => 'world']), false)))->toBe('Hello world');
+});
+
+it('checks source timestamps once per template until forgotten', function () {
+    $files = mock(\Illuminate\Filesystem\Filesystem::class)->makePartial();
+    app()->instance('files', $files);
+    $mainPath = $this->directory.'/views/main.liquid';
+    $partialPath = $this->directory.'/views/item.liquid';
+    $files->put($mainPath, '{% for i in (1..5) %}{% render "item" %}{% endfor %}');
+    $files->put($partialPath, 'x');
+    touch($mainPath, time() - 20);
+    touch($partialPath, time() - 20);
+
+    expect(view('main')->render())->toBe('xxxxx');
+    app('view.engine.resolver')->resolve('liquid')->forgetCompiled();
+
+    $files->shouldReceive('lastModified')->with($mainPath)->once()->passthru();
+    $files->shouldReceive('lastModified')->with($partialPath)->once()->passthru();
+    $files->shouldReceive('lastModified')->with(\Mockery::pattern('/\.php$/'))->atLeast()->once()->passthru();
+
+    expect(view('main')->render())->toBe('xxxxx');
+    expect(view('main')->render())->toBe('xxxxx');
 });
