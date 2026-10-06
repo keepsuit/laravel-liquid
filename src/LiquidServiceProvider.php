@@ -3,7 +3,6 @@
 namespace Keepsuit\LaravelLiquid;
 
 use Clockwork\Clockwork;
-use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\View\Factory;
