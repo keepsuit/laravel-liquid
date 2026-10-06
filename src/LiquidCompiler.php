@@ -11,12 +11,11 @@ use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewException;
+use Keepsuit\LaravelLiquid\Support\LaravelTemplatesCache;
 use Keepsuit\Liquid\Environment;
 use Keepsuit\Liquid\Exceptions\InternalException;
 use Keepsuit\Liquid\Exceptions\LiquidException;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
-use Keepsuit\Liquid\Template;
-use Symfony\Component\VarExporter\VarExporter;
 
 class LiquidCompiler extends Compiler implements CompilerInterface
 {
@@ -27,52 +26,13 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         try {
-            $this->getEnvironment()->parseTemplate(
+            $this->getEnvironment()->newParseContext()->parseTemplate(
                 $this->getTemplateNameFromPath($path),
+                force: true,
             );
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
         }
-    }
-
-    public function saveCompiledTemplate(Template $template): void
-    {
-        if ($template->name() === null) {
-            return;
-        }
-
-        $path = $this->getPathFromTemplateName($template->name());
-
-        $compiledPath = $this->getCompiledPath($path);
-
-        $this->ensureCompiledDirectoryExists($compiledPath);
-
-        $this->files->put($compiledPath, '<?php return '.VarExporter::export($template).';');
-
-        try {
-            // Set the timestamp before the startup time to allow opcache to cache the file
-            if (is_numeric($_SERVER['REQUEST_TIME'])) {
-                touch($compiledPath, ((int) $_SERVER['REQUEST_TIME']) - 5);
-            }
-
-            if (function_exists('opcache_invalidate')) {
-                opcache_invalidate($compiledPath, true);
-            }
-        } catch (\Throwable) {
-        }
-    }
-
-    public function removeCompiledTemplate(string $templateName): void
-    {
-        $compiledPath = $this->getCompiledPath($this->getPathFromTemplateName($templateName));
-
-        $this->files->delete($compiledPath);
-    }
-
-    public function clearCompiledTemplates(): void
-    {
-        $this->files->deleteDirectory($this->cachePath);
-        $this->ensureCompiledDirectoryExists($this->cachePath);
     }
 
     /**
@@ -80,37 +40,13 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function render(string $path, array $data): string
     {
-        $template = $this->resolveCompiledTemplateByPath($path);
-
-        if (! $template instanceof Template) {
-            throw new \Exception('Template is not an instance of Template');
-        }
-
-        $this->ensureTemplatePartialsAreCompiled($template);
-
         try {
-            $context = $this->getEnvironment()->newRenderContext(
-                data: $data,
-            );
+            $environment = $this->getEnvironment();
 
-            return $template->render($context);
+            return $environment->parseTemplate($this->getTemplateNameFromPath($path))
+                ->render($environment->newRenderContext(data: $data));
         } catch (LiquidException $e) {
             $this->mapLiquidExceptionToLaravel($e, $path);
-        }
-    }
-
-    public function resolveCompiledTemplateByPath(string $path): ?Template
-    {
-        try {
-            $compiled = require $this->getCompiledPath($path);
-
-            if (! $compiled instanceof Template) {
-                return null;
-            }
-
-            return $compiled;
-        } catch (FileNotFoundException $e) {
-            return null;
         }
     }
 
@@ -149,6 +85,11 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         return $viewFinder;
     }
 
+    public function getCachePath(): string
+    {
+        return $this->cachePath;
+    }
+
     public function getFiles(): Filesystem
     {
         return $this->files;
@@ -175,13 +116,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         );
     }
 
-    protected function ensureTemplatePartialsAreCompiled(Template $template): void
+    public function forgetCompiled(): void
     {
-        foreach ($template->state->partials as $partial) {
-            $path = $this->getPathFromTemplateName($partial);
-            if (! $this->files->exists($this->getCompiledPath($path))) {
-                $this->compile($path);
-            }
+        $cache = $this->getEnvironment()->templatesCache;
+
+        if ($cache instanceof LaravelTemplatesCache) {
+            $cache->forgetLoaded();
         }
     }
 }

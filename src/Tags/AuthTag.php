@@ -2,13 +2,15 @@
 
 namespace Keepsuit\LaravelLiquid\Tags;
 
+use Keepsuit\Liquid\Compiler\CompilerContext;
+use Keepsuit\Liquid\Contracts\CanBeCompiled;
 use Keepsuit\Liquid\Exceptions\SyntaxException;
 use Keepsuit\Liquid\Nodes\BodyNode;
 use Keepsuit\Liquid\Parse\TagParseContext;
 use Keepsuit\Liquid\Render\RenderContext;
 use Keepsuit\Liquid\TagBlock;
 
-class AuthTag extends TagBlock
+class AuthTag extends TagBlock implements CanBeCompiled
 {
     protected ?string $guard;
 
@@ -62,5 +64,23 @@ class AuthTag extends TagBlock
         }
 
         return $this->elseBody?->render($context) ?? '';
+    }
+
+    public function compile(CompilerContext $context): void
+    {
+        $this->compileGuard($context, 'check');
+    }
+
+    protected function compileGuard(CompilerContext $context, string $method): void
+    {
+        $context->write('if (auth()->guard('.$context->writeValue($this->guard).')->'.$method.'()) {')->indent();
+        $context->compileBody($this->body);
+        $context->outdent()->write('}');
+
+        if ($this->elseBody !== null) {
+            $context->write('else {')->indent();
+            $context->compileBody($this->elseBody);
+            $context->outdent()->write('}');
+        }
     }
 }

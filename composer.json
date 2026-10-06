@@ -17,10 +17,9 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
-        "keepsuit/liquid": "^0.7 || ^0.8 || ^0.9 || ^0.10 || ^0.11 || ^0.12",
-        "spatie/laravel-package-tools": "^1.16",
-        "symfony/var-exporter": "^7.0 || ^8.0"
+        "illuminate/contracts": "^11.28 || ^12.0 || ^13.0",
+        "keepsuit/liquid": "^0.13.0-beta.2",
+        "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
         "itsgoingd/clockwork": "^5.3",
@@ -33,7 +32,8 @@
         "pestphp/pest-plugin-laravel": "^3.0 || ^4.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "spatie/laravel-ray": "^1.26"
+        "spatie/laravel-ray": "^1.26",
+        "spatie/temporary-directory": "^2.4"
     },
     "autoload": {
         "psr-4": {

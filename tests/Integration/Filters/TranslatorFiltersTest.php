@@ -20,7 +20,7 @@ beforeEach(function () {
 });
 
 test('trans filter', function () {
-    $template = $this->environment->parseString('{{ "home.title" | trans }}');
+    $template = parseLiquidString($this->environment, '{{ "home.title" | trans }}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('Home page title');
@@ -32,7 +32,7 @@ test('trans filter', function () {
 });
 
 test('t filter alias', function () {
-    $template = $this->environment->parseString('{{ "home.title" | t }}');
+    $template = parseLiquidString($this->environment, '{{ "home.title" | t }}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('Home page title');
@@ -44,7 +44,7 @@ test('t filter alias', function () {
 });
 
 test('trans filter with param', function () {
-    $template = $this->environment->parseString('{{ "home.counter" | trans: value: 3 }}');
+    $template = parseLiquidString($this->environment, '{{ "home.counter" | trans: value: 3 }}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('3 items');
@@ -56,7 +56,7 @@ test('trans filter with param', function () {
 });
 
 test('trans_choice filter', function () {
-    $template = $this->environment->parseString('{{ "home.choice" | trans_choice: 0 }}|{{ "home.choice" | trans_choice: 1 }}|{{ "home.choice" | trans_choice: 2 }}');
+    $template = parseLiquidString($this->environment, '{{ "home.choice" | trans_choice: 0 }}|{{ "home.choice" | trans_choice: 1 }}|{{ "home.choice" | trans_choice: 2 }}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('No items|1 item|2 items');
@@ -68,7 +68,7 @@ test('trans_choice filter', function () {
 });
 
 test('trans_choice filter with param', function () {
-    $template = $this->environment->parseString('{{ "home.choice_param" | trans_choice: 0, value: 9 }}|{{ "home.choice_param" | trans_choice: 1, value: 9 }}|{{ "home.choice_param" | trans_choice: 2, value: 9 }}');
+    $template = parseLiquidString($this->environment, '{{ "home.choice_param" | trans_choice: 0, value: 9 }}|{{ "home.choice_param" | trans_choice: 1, value: 9 }}|{{ "home.choice_param" | trans_choice: 2, value: 9 }}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('No items|9 item|9 items');

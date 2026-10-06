@@ -12,6 +12,7 @@ use Keepsuit\Liquid\Template;
  *
  * @method static Template parse(string $view)
  * @method static HtmlString render(string $view, array $data = [])
+ * @method static \Generator<string> stream(string $view, array $data = [])
  * @method static Environment environment()
  */
 class Liquid extends Facade

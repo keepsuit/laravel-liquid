@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-liquid` will be documented in this file.
 
+## Unreleased
+
+### Breaking changes
+
+* Requires `keepsuit/liquid` `^0.13`; support for `0.7`-`0.12` is dropped, and `illuminate/contracts` must be `^11.28` or newer.
+* Output changes inherited from `keepsuit/liquid` 0.13: integral floats keep the `.0` (`{{ 3.0 }}` renders `3.0`), math filters use decimal arithmetic, and incomplete `if`/`elsif`/`unless` conditions, empty tags, duplicate `for` `else` sections and missing filter arguments throw `SyntaxException` at parse time. See the `keepsuit/liquid` changelog for the full list.
+
+### What's changed
+
+* Liquid views are compiled to PHP artifacts, shared between `view()` and the `Liquid` facade.
+* Added the `liquid:cache` command, also run by `php artisan optimize`.
+* Added `Liquid::stream()` to stream a view.
+* `auth`, `guest` and `env` tags are compiled.
+
 ## v0.6.3 - 2026-08-31
 
 ### What's changed

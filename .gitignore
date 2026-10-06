@@ -9,4 +9,3 @@ testbench.yaml
 vendor
 node_modules
 workbench/storage
-tests/cache
