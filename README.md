@@ -31,6 +31,27 @@ class HomeController extends Controller
 }
 ```
 
+## PHP compilation
+
+Views and partials are compiled to PHP using Liquid 0.13's compiler. Artifacts use
+Laravel's configured `view.compiled` directory and respect `view.cache`.
+Laravel tags, filters, and parse-time outputs remain available.
+Views and the Liquid facade share loaded compiled templates within a request.
+
+To send a template as it renders, without building the whole output in memory:
+
+```php
+return response()->stream(function () {
+    foreach (Liquid::stream('home', ['name' => 'World']) as $chunk) {
+        echo $chunk;
+    }
+});
+```
+
+To compile all Liquid views ahead of time (e.g. on deploy) run `php artisan liquid:cache`.
+It also runs as part of `php artisan optimize`. `view:cache` only handles Blade views,
+and `view:clear` / `optimize:clear` remove the Liquid artifacts as well.
+
 ## Tags
 
 This package provides some custom tags in addition to the standard Liquid tags.
@@ -165,6 +186,8 @@ Generate urls using the laravel url helpers.
 ```
 
 ## Testing
+
+Run the suite with compiled templates:
 
 ```bash
 composer test

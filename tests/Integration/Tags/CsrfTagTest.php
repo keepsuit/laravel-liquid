@@ -9,7 +9,7 @@ it('renders csrf input', function () {
         ->shouldReceive('token')
         ->andReturn('csrf-token-value');
 
-    $template = $this->environment->parseString('{% csrf %}');
+    $template = parseLiquidString($this->environment, '{% csrf %}');
 
     expect($template->render($this->environment->newRenderContext()))
         ->toBe('<input type="hidden" name="_token" value="csrf-token-value" autocomplete="off">');

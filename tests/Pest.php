@@ -1,16 +1,35 @@
 <?php
 
 use Keepsuit\LaravelLiquid\Tests\TestCase;
+use Keepsuit\Liquid\Environment;
+use Keepsuit\Liquid\Template;
 
 uses(TestCase::class)->in(__DIR__);
 
-function newLiquidEnvironment(): \Keepsuit\Liquid\Environment
+function newLiquidEnvironment(): Environment
 {
     return app('liquid.factory')
         ->setRethrowErrors(true)
         ->setStrictVariables(true)
         ->setStrictFilters(true)
         ->build();
+}
+
+function parseLiquidString(Environment $environment, string $source, string $mode = 'compiled'): Template
+{
+    $template = $environment->parseString($source);
+
+    if ($mode === 'parsed') {
+        return $template;
+    }
+
+    $path = test()->temporaryDirectory()->path(bin2hex(random_bytes(8)).'.php');
+
+    $environment->compile($template, $path);
+    $compiled = require $path;
+    $class = $compiled::class;
+
+    return new $class($template->getState());
 }
 
 function setEnv(string $env): void

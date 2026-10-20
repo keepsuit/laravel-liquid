@@ -25,6 +25,17 @@ class Liquid
         return new HtmlString($content);
     }
 
+    /**
+     * Errors are thrown while iterating, after earlier chunks may already have been sent.
+     *
+     * @return \Generator<string>
+     */
+    public function stream(string $view, array $data = []): \Generator
+    {
+        yield from $this->parse($view)
+            ->stream($this->environment->newRenderContext(data: $data));
+    }
+
     public function environment(): Environment
     {
         return $this->environment;

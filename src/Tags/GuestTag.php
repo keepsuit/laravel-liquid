@@ -2,6 +2,7 @@
 
 namespace Keepsuit\LaravelLiquid\Tags;
 
+use Keepsuit\Liquid\Compiler\CompilerContext;
 use Keepsuit\Liquid\Render\RenderContext;
 
 class GuestTag extends AuthTag
@@ -18,5 +19,10 @@ class GuestTag extends AuthTag
         }
 
         return $this->elseBody?->render($context) ?? '';
+    }
+
+    public function compile(CompilerContext $context): void
+    {
+        $this->compileGuard($context, 'guest');
     }
 }

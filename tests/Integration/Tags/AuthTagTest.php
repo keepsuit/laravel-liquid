@@ -6,19 +6,19 @@ beforeEach(function () {
     $this->environment = newLiquidEnvironment();
 });
 
-it('auth tag', function () {
-    $template = $this->environment->parseString('{% auth %}authenticated{% endauth %}');
+it('auth tag', function (string $mode) {
+    $template = parseLiquidString($this->environment, '{% auth %}authenticated{% endauth %}', $mode);
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
     Auth::setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->environment->newRenderContext()))->toBe('authenticated');
-});
+})->with('liquid modes');
 
-it('auth tag with custom guard', function () {
+it('auth tag with custom guard', function (string $mode) {
     config()->set('auth.guards.admin', ['driver' => 'session', 'provider' => 'users']);
 
-    $template = $this->environment->parseString('{% auth "admin" %}authenticated{% endauth %}');
+    $template = parseLiquidString($this->environment, '{% auth "admin" %}authenticated{% endauth %}', $mode);
 
     expect($template->render($this->environment->newRenderContext()))->toBe('');
 
@@ -27,13 +27,13 @@ it('auth tag with custom guard', function () {
 
     Auth::guard('admin')->setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->environment->newRenderContext()))->toBe('authenticated');
-});
+})->with('liquid modes');
 
-it('auth tag else', function () {
-    $template = $this->environment->parseString('{% auth %}authenticated{% else %}guest{% endauth %}');
+it('auth tag else', function (string $mode) {
+    $template = parseLiquidString($this->environment, '{% auth %}authenticated{% else %}guest{% endauth %}', $mode);
 
     expect($template->render($this->environment->newRenderContext()))->toBe('guest');
 
     Auth::setUser(new \Illuminate\Foundation\Auth\User);
     expect($template->render($this->environment->newRenderContext()))->toBe('authenticated');
-});
+})->with('liquid modes');
